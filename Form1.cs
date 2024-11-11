@@ -169,6 +169,7 @@ namespace websoku86v6
         public int laneNo;
         public int reasonCode;
         public int rank;
+        public string newRecord;
     }
 
     public static class Html
@@ -354,7 +355,7 @@ namespace websoku86v6
 
                                         if (mdb.GameRecordAvailable)
                                         {
-                                            if (mdb.GetGameRecord(uid) > result.goalTime)
+                                            if (mdb.GetGameRecord(prgNo) > result.goalTime)
                                             {
                                                 sw.WriteLine("<td valign=\"top\">大会新</td>");
                                             }
@@ -514,14 +515,17 @@ namespace websoku86v6
 
                         if (record.goalTime > 0)
                         {
-                            if (mdb.GameRecordAvailable && mdb.GetGameRecord(uid) > record.goalTime)
+                            writer.WriteLine("<td>" + record.newRecord + "</td>");
+                            /*
+                            if (mdb.GameRecordAvailable && mdb.GetGameRecord(prgNo) > record.goalTime)
                             {
                                 writer.WriteLine("<td>大会新</td>");
                             }
-                            if (mdb.GameRecordAvailable && mdb.GetGameRecord(uid) == record.goalTime)
+                            if (mdb.GameRecordAvailable && mdb.GetGameRecord(prgNo) == record.goalTime)
                             {
                                 writer.WriteLine("<td>大会タイ</td>");
                             }
+                            */
 
                         }
 
@@ -712,8 +716,8 @@ namespace websoku86v6
         int[] styleByPrgNo;
         int[] distanceByPrgNo;
         string[] phaseByPrgNo; // 予選/決勝/タイム決勝
-        int[] gameRecord4UID;
-        public int GetGameRecord(int uid) { return gameRecord4UID[uid]; }
+        int[] gameRecord4PrgNo;
+        public int GetGameRecord(int prgNo) { return gameRecord4PrgNo[prgNo]; }
         int[] numSwimmers4UID;
         public int GetHowManySwimmers(int uid) { return numSwimmers4UID[uid]; }
         public int GetUIDFromPrgNo(int prgNo) { return UIDFromPrgNo[prgNo]; }
@@ -954,7 +958,7 @@ namespace websoku86v6
         }
         void InitTables()
         {
-            genderStr = new string[4] { "", "男子", "女子", "混合" };
+            genderStr = new string[5] { "", "男子", "女子", "混成", "混合" };
             InitLapInterval();
             InitStyleTable();
             InitDistanceTable();
@@ -1006,7 +1010,7 @@ namespace websoku86v6
 
                     connection.Open();
 
-                    string query = "SELECT プログラム.競技番号 as UID, 新記録.記録  as 記録 FROM プログラム " +
+                    string query = "SELECT プログラム.競技番号 as UID, プログラム.表示用競技番号 as PrgNo, 新記録.記録  as 記録 FROM プログラム " +
                                    "INNER JOIN 新記録 ON プログラム.種目コード = 新記録.種目コード " +
                                    "AND プログラム.距離コード = 新記録.距離コード " +
                                    "AND プログラム.クラス番号 = 新記録.記録区分番号 " +
@@ -1023,14 +1027,15 @@ namespace websoku86v6
                                 while (reader.Read())
                                 {
                                     int uid = Convert.ToInt32(reader["UID"]);
+                                    int prgNo = Convert.ToInt32(reader["PrgNo"]);
                                     object recordValue = reader["記録"];
                                     if (recordValue == DBNull.Value)
                                     {
-                                        gameRecord4UID[uid] = NORECORDYET;
+                                        gameRecord4PrgNo[prgNo] = NORECORDYET;
                                     }
                                     else
                                     {
-                                        gameRecord4UID[uid] = Misc.TimeStrToInt(recordValue.ToString().Trim());
+                                        gameRecord4PrgNo[prgNo] = Misc.TimeStrToInt(recordValue.ToString().Trim());
                                     }
 
                                 }
@@ -1109,7 +1114,7 @@ namespace websoku86v6
             distanceByPrgNo = new int[maxPrgNo];
             phaseByPrgNo = new string[maxPrgNo];
             ClassNoByPrgNo = new int[maxPrgNo];
-            gameRecord4UID = new int[maxUID];
+            gameRecord4PrgNo = new int[maxPrgNo];
             numSwimmers4UID = new int[maxUID];
         }
         void ReadProgramDB()
@@ -1362,7 +1367,7 @@ namespace websoku86v6
                     "ラップ.[1225m] as lap1225, ラップ.[1250m] as lap1250, ラップ.[1275m] as lap1275, ラップ.[1300m] as lap1300, " +
                     "ラップ.[1325m] as lap1325, ラップ.[1350m] as lap1350, ラップ.[1375m] as lap1375, ラップ.[1400m] as lap1400, " +
                     "ラップ.[1425m] as lap1425, ラップ.[1450m] as lap1450, ラップ.[1475m] as lap1475, ラップ.[1500m] as lap1500, " +
-                  " 記録.組 as 組, 記録.水路 as 水路, 事由入力ステータス " +
+                  " 記録.組 as 組, 記録.水路 as 水路, 事由入力ステータス, 新記録印刷マーク " +
                   "FROM 記録 " +
                   " INNER JOIN ラップ ON 記録.競技番号 = ラップ.競技番号 AND " +
                   " 記録.組 = ラップ.組 AND 記録.水路 = ラップ.水路 " +
@@ -1387,6 +1392,7 @@ namespace websoku86v6
                         result.rswimmer[3] = Misc.Obj2Int(dr["第４泳者"]);
                         result.laneNo = Misc.Obj2Int(dr["水路"]);
                         result.reasonCode = Misc.Obj2Int(dr["事由入力ステータス"]);
+                        result.newRecord = Misc.Obj2String(dr["新記録印刷マーク"]);
                         for (int i = 0; i < 60; i++)
                         {
                             result.lapTime[i] = Misc.Obj2String(dr[lapstring[i]]);
