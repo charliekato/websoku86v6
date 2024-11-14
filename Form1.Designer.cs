@@ -79,10 +79,10 @@
             // 
             lblServerName.AutoSize = true;
             lblServerName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblServerName.Location = new Point(110, 130);
-            lblServerName.Margin = new Padding(2, 0, 2, 0);
+            lblServerName.Location = new Point(68, 81);
+            lblServerName.Margin = new Padding(1, 0, 1, 0);
             lblServerName.Name = "lblServerName";
-            lblServerName.Size = new Size(189, 33);
+            lblServerName.Size = new Size(119, 20);
             lblServerName.TabIndex = 0;
             lblServerName.Text = "Server Name";
             // 
@@ -90,10 +90,10 @@
             // 
             lblHtmlPath.AutoSize = true;
             lblHtmlPath.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblHtmlPath.Location = new Point(110, 700);
-            lblHtmlPath.Margin = new Padding(2, 0, 2, 0);
+            lblHtmlPath.Location = new Point(68, 438);
+            lblHtmlPath.Margin = new Padding(1, 0, 1, 0);
             lblHtmlPath.Name = "lblHtmlPath";
-            lblHtmlPath.Size = new Size(196, 33);
+            lblHtmlPath.Size = new Size(121, 20);
             lblHtmlPath.TabIndex = 1;
             lblHtmlPath.Text = "Html file path";
             // 
@@ -101,10 +101,10 @@
             // 
             lblIndexFile.AutoSize = true;
             lblIndexFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblIndexFile.Location = new Point(110, 250);
-            lblIndexFile.Margin = new Padding(2, 0, 2, 0);
+            lblIndexFile.Location = new Point(68, 156);
+            lblIndexFile.Margin = new Padding(1, 0, 1, 0);
             lblIndexFile.Name = "lblIndexFile";
-            lblIndexFile.Size = new Size(216, 33);
+            lblIndexFile.Size = new Size(133, 20);
             lblIndexFile.TabIndex = 2;
             lblIndexFile.Text = "index file name";
             // 
@@ -112,10 +112,10 @@
             // 
             lblPrgResult.AutoSize = true;
             lblPrgResult.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblPrgResult.Location = new Point(110, 310);
-            lblPrgResult.Margin = new Padding(2, 0, 2, 0);
+            lblPrgResult.Location = new Point(68, 194);
+            lblPrgResult.Margin = new Padding(1, 0, 1, 0);
             lblPrgResult.Name = "lblPrgResult";
-            lblPrgResult.Size = new Size(303, 33);
+            lblPrgResult.Size = new Size(188, 20);
             lblPrgResult.TabIndex = 3;
             lblPrgResult.Text = "Program形式結果File";
             // 
@@ -123,66 +123,66 @@
             // 
             lblRanking.AutoSize = true;
             lblRanking.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblRanking.Location = new Point(110, 370);
-            lblRanking.Margin = new Padding(2, 0, 2, 0);
+            lblRanking.Location = new Point(68, 231);
+            lblRanking.Margin = new Padding(1, 0, 1, 0);
             lblRanking.Name = "lblRanking";
-            lblRanking.Size = new Size(177, 33);
+            lblRanking.Size = new Size(109, 20);
             lblRanking.TabIndex = 4;
             lblRanking.Text = "Ranking File";
             // 
             // txtBoxServerName
             // 
             txtBoxServerName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxServerName.Location = new Point(450, 125);
-            txtBoxServerName.Margin = new Padding(2, 5, 2, 5);
+            txtBoxServerName.Location = new Point(277, 78);
+            txtBoxServerName.Margin = new Padding(1, 3, 1, 3);
             txtBoxServerName.Name = "txtBoxServerName";
-            txtBoxServerName.Size = new Size(303, 39);
-            txtBoxServerName.TabIndex = 5;
+            txtBoxServerName.Size = new Size(188, 27);
+            txtBoxServerName.TabIndex = 1;
             // 
             // txtBoxHtmlPath
             // 
             txtBoxHtmlPath.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxHtmlPath.Location = new Point(450, 695);
-            txtBoxHtmlPath.Margin = new Padding(2, 5, 2, 5);
+            txtBoxHtmlPath.Location = new Point(277, 434);
+            txtBoxHtmlPath.Margin = new Padding(1, 3, 1, 3);
             txtBoxHtmlPath.Name = "txtBoxHtmlPath";
-            txtBoxHtmlPath.Size = new Size(726, 39);
-            txtBoxHtmlPath.TabIndex = 6;
+            txtBoxHtmlPath.Size = new Size(448, 27);
+            txtBoxHtmlPath.TabIndex = 9;
             // 
             // txtBoxIndexFile
             // 
             txtBoxIndexFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxIndexFile.Location = new Point(450, 245);
-            txtBoxIndexFile.Margin = new Padding(2, 5, 2, 5);
+            txtBoxIndexFile.Location = new Point(277, 153);
+            txtBoxIndexFile.Margin = new Padding(1, 3, 1, 3);
             txtBoxIndexFile.Name = "txtBoxIndexFile";
-            txtBoxIndexFile.Size = new Size(303, 39);
-            txtBoxIndexFile.TabIndex = 7;
+            txtBoxIndexFile.Size = new Size(188, 27);
+            txtBoxIndexFile.TabIndex = 3;
             // 
             // txtBoxPrgResult
             // 
             txtBoxPrgResult.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxPrgResult.Location = new Point(450, 305);
-            txtBoxPrgResult.Margin = new Padding(2, 5, 2, 5);
+            txtBoxPrgResult.Location = new Point(277, 191);
+            txtBoxPrgResult.Margin = new Padding(1, 3, 1, 3);
             txtBoxPrgResult.Name = "txtBoxPrgResult";
-            txtBoxPrgResult.Size = new Size(303, 39);
-            txtBoxPrgResult.TabIndex = 8;
+            txtBoxPrgResult.Size = new Size(188, 27);
+            txtBoxPrgResult.TabIndex = 4;
             // 
             // txtBoxRanking
             // 
             txtBoxRanking.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxRanking.Location = new Point(450, 365);
-            txtBoxRanking.Margin = new Padding(2, 5, 2, 5);
+            txtBoxRanking.Location = new Point(277, 228);
+            txtBoxRanking.Margin = new Padding(1, 3, 1, 3);
             txtBoxRanking.Name = "txtBoxRanking";
-            txtBoxRanking.Size = new Size(303, 39);
-            txtBoxRanking.TabIndex = 9;
+            txtBoxRanking.Size = new Size(188, 27);
+            txtBoxRanking.TabIndex = 5;
             // 
             // btnRun
             // 
             btnRun.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnRun.Location = new Point(196, 1027);
-            btnRun.Margin = new Padding(2, 5, 2, 5);
+            btnRun.Location = new Point(121, 642);
+            btnRun.Margin = new Padding(1, 3, 1, 3);
             btnRun.Name = "btnRun";
-            btnRun.Size = new Size(162, 91);
-            btnRun.TabIndex = 10;
+            btnRun.Size = new Size(100, 57);
+            btnRun.TabIndex = 15;
             btnRun.Text = "作成";
             btnRun.UseVisualStyleBackColor = true;
             btnRun.Click += btnRun_Click;
@@ -190,11 +190,11 @@
             // btnAutoRun
             // 
             btnAutoRun.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnAutoRun.Location = new Point(998, 1027);
-            btnAutoRun.Margin = new Padding(2, 5, 2, 5);
+            btnAutoRun.Location = new Point(614, 642);
+            btnAutoRun.Margin = new Padding(1, 3, 1, 3);
             btnAutoRun.Name = "btnAutoRun";
-            btnAutoRun.Size = new Size(154, 91);
-            btnAutoRun.TabIndex = 11;
+            btnAutoRun.Size = new Size(95, 57);
+            btnAutoRun.TabIndex = 20;
             btnAutoRun.Text = "開始";
             btnAutoRun.UseVisualStyleBackColor = true;
             btnAutoRun.Click += btnAutoRun_Click;
@@ -203,40 +203,40 @@
             // 
             lblInterval.AutoSize = true;
             lblInterval.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblInterval.Location = new Point(526, 1056);
-            lblInterval.Margin = new Padding(2, 0, 2, 0);
+            lblInterval.Location = new Point(324, 660);
+            lblInterval.Margin = new Padding(1, 0, 1, 0);
             lblInterval.Name = "lblInterval";
-            lblInterval.Size = new Size(259, 33);
+            lblInterval.Size = new Size(161, 20);
             lblInterval.TabIndex = 12;
             lblInterval.Text = "自動実行間隔(分)";
             // 
             // txtBoxInterval
             // 
             txtBoxInterval.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxInterval.Location = new Point(829, 1051);
-            txtBoxInterval.Margin = new Padding(2, 5, 2, 5);
+            txtBoxInterval.Location = new Point(510, 657);
+            txtBoxInterval.Margin = new Padding(1, 3, 1, 3);
             txtBoxInterval.Name = "txtBoxInterval";
-            txtBoxInterval.Size = new Size(67, 39);
-            txtBoxInterval.TabIndex = 13;
+            txtBoxInterval.Size = new Size(43, 27);
+            txtBoxInterval.TabIndex = 12;
             txtBoxInterval.Text = "5";
             // 
             // txtBoxScoreFile
             // 
             txtBoxScoreFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxScoreFile.Location = new Point(450, 425);
-            txtBoxScoreFile.Margin = new Padding(2, 5, 2, 5);
+            txtBoxScoreFile.Location = new Point(277, 266);
+            txtBoxScoreFile.Margin = new Padding(1, 3, 1, 3);
             txtBoxScoreFile.Name = "txtBoxScoreFile";
-            txtBoxScoreFile.Size = new Size(303, 39);
-            txtBoxScoreFile.TabIndex = 17;
+            txtBoxScoreFile.Size = new Size(188, 27);
+            txtBoxScoreFile.TabIndex = 6;
             // 
             // lblScoreFile
             // 
             lblScoreFile.AutoSize = true;
             lblScoreFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblScoreFile.Location = new Point(110, 430);
-            lblScoreFile.Margin = new Padding(2, 0, 2, 0);
+            lblScoreFile.Location = new Point(68, 269);
+            lblScoreFile.Margin = new Padding(1, 0, 1, 0);
             lblScoreFile.Name = "lblScoreFile";
-            lblScoreFile.Size = new Size(151, 33);
+            lblScoreFile.Size = new Size(93, 20);
             lblScoreFile.TabIndex = 16;
             lblScoreFile.Text = "Score File";
             // 
@@ -244,21 +244,21 @@
             // 
             lblTitle.AutoSize = true;
             lblTitle.Font = new Font("MS UI Gothic", 20F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblTitle.Location = new Point(299, 29);
-            lblTitle.Margin = new Padding(2, 0, 2, 0);
+            lblTitle.Location = new Point(184, 18);
+            lblTitle.Margin = new Padding(1, 0, 1, 0);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(472, 54);
+            lblTitle.Size = new Size(298, 34);
             lblTitle.TabIndex = 18;
             lblTitle.Text = "WEB速報作成ツール";
             // 
             // btnQuit
             // 
             btnQuit.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnQuit.Location = new Point(1044, 14);
-            btnQuit.Margin = new Padding(2, 5, 2, 5);
+            btnQuit.Location = new Point(642, 9);
+            btnQuit.Margin = new Padding(1, 3, 1, 3);
             btnQuit.Name = "btnQuit";
-            btnQuit.Size = new Size(162, 91);
-            btnQuit.TabIndex = 21;
+            btnQuit.Size = new Size(100, 57);
+            btnQuit.TabIndex = 45;
             btnQuit.Text = "終了";
             btnQuit.UseVisualStyleBackColor = true;
             btnQuit.Click += btnQuit_Click;
@@ -267,41 +267,41 @@
             // 
             lblAutoRun.AutoSize = true;
             lblAutoRun.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblAutoRun.Location = new Point(998, 989);
-            lblAutoRun.Margin = new Padding(2, 0, 2, 0);
+            lblAutoRun.Location = new Point(614, 618);
+            lblAutoRun.Margin = new Padding(1, 0, 1, 0);
             lblAutoRun.Name = "lblAutoRun";
-            lblAutoRun.Size = new Size(143, 33);
+            lblAutoRun.Size = new Size(89, 20);
             lblAutoRun.TabIndex = 22;
             lblAutoRun.Text = "自動実行";
             // 
             // txtBoxKeyFile
             // 
             txtBoxKeyFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxKeyFile.Location = new Point(453, 755);
-            txtBoxKeyFile.Margin = new Padding(2, 5, 2, 5);
+            txtBoxKeyFile.Location = new Point(279, 472);
+            txtBoxKeyFile.Margin = new Padding(1, 3, 1, 3);
             txtBoxKeyFile.Name = "txtBoxKeyFile";
-            txtBoxKeyFile.Size = new Size(726, 39);
-            txtBoxKeyFile.TabIndex = 24;
+            txtBoxKeyFile.Size = new Size(448, 27);
+            txtBoxKeyFile.TabIndex = 10;
             // 
             // lblKeyFile
             // 
             lblKeyFile.AutoSize = true;
             lblKeyFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblKeyFile.Location = new Point(110, 760);
-            lblKeyFile.Margin = new Padding(2, 0, 2, 0);
+            lblKeyFile.Location = new Point(68, 475);
+            lblKeyFile.Margin = new Padding(1, 0, 1, 0);
             lblKeyFile.Name = "lblKeyFile";
-            lblKeyFile.Size = new Size(201, 33);
+            lblKeyFile.Size = new Size(125, 20);
             lblKeyFile.TabIndex = 23;
             lblKeyFile.Text = "秘密鍵ファイル";
             // 
             // btnConfirmServer
             // 
             btnConfirmServer.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnConfirmServer.Location = new Point(946, 200);
-            btnConfirmServer.Margin = new Padding(3, 4, 3, 4);
+            btnConfirmServer.Location = new Point(582, 125);
+            btnConfirmServer.Margin = new Padding(2, 2, 2, 2);
             btnConfirmServer.Name = "btnConfirmServer";
-            btnConfirmServer.Size = new Size(170, 69);
-            btnConfirmServer.TabIndex = 25;
+            btnConfirmServer.Size = new Size(105, 43);
+            btnConfirmServer.TabIndex = 13;
             btnConfirmServer.Text = "接続確認";
             btnConfirmServer.UseVisualStyleBackColor = true;
             btnConfirmServer.Click += btnConfirmServer_Click;
@@ -309,11 +309,11 @@
             // btnKeyFile
             // 
             btnKeyFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnKeyFile.Location = new Point(1075, 811);
-            btnKeyFile.Margin = new Padding(3, 4, 3, 4);
+            btnKeyFile.Location = new Point(662, 507);
+            btnKeyFile.Margin = new Padding(2, 2, 2, 2);
             btnKeyFile.Name = "btnKeyFile";
-            btnKeyFile.Size = new Size(104, 64);
-            btnKeyFile.TabIndex = 28;
+            btnKeyFile.Size = new Size(64, 40);
+            btnKeyFile.TabIndex = 14;
             btnKeyFile.Text = "選択";
             btnKeyFile.UseVisualStyleBackColor = true;
             btnKeyFile.Click += btnKeyFile_Click;
@@ -321,20 +321,20 @@
             // txtBoxHostName
             // 
             txtBoxHostName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxHostName.Location = new Point(450, 575);
-            txtBoxHostName.Margin = new Padding(2, 5, 2, 5);
+            txtBoxHostName.Location = new Point(277, 359);
+            txtBoxHostName.Margin = new Padding(1, 3, 1, 3);
             txtBoxHostName.Name = "txtBoxHostName";
-            txtBoxHostName.Size = new Size(303, 39);
-            txtBoxHostName.TabIndex = 30;
+            txtBoxHostName.Size = new Size(188, 27);
+            txtBoxHostName.TabIndex = 7;
             // 
             // lblHostName
             // 
             lblHostName.AutoSize = true;
             lblHostName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblHostName.Location = new Point(110, 580);
-            lblHostName.Margin = new Padding(2, 0, 2, 0);
+            lblHostName.Location = new Point(68, 362);
+            lblHostName.Margin = new Padding(1, 0, 1, 0);
             lblHostName.Name = "lblHostName";
-            lblHostName.Size = new Size(164, 33);
+            lblHostName.Size = new Size(102, 20);
             lblHostName.TabIndex = 29;
             lblHostName.Text = "Host Name";
             // 
@@ -342,39 +342,40 @@
             // 
             lblNote.AutoSize = true;
             lblNote.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblNote.Location = new Point(222, 506);
+            lblNote.Location = new Point(137, 316);
+            lblNote.Margin = new Padding(2, 0, 2, 0);
             lblNote.Name = "lblNote";
-            lblNote.Size = new Size(894, 33);
+            lblNote.Size = new Size(557, 20);
             lblNote.TabIndex = 31;
             lblNote.Text = "-------- Webサーバーにアップロードする場合は以下も設定の事----";
             // 
             // txtBoxUserName
             // 
             txtBoxUserName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxUserName.Location = new Point(450, 635);
-            txtBoxUserName.Margin = new Padding(2, 5, 2, 5);
+            txtBoxUserName.Location = new Point(277, 397);
+            txtBoxUserName.Margin = new Padding(1, 3, 1, 3);
             txtBoxUserName.Name = "txtBoxUserName";
-            txtBoxUserName.Size = new Size(303, 39);
-            txtBoxUserName.TabIndex = 33;
+            txtBoxUserName.Size = new Size(188, 27);
+            txtBoxUserName.TabIndex = 8;
             // 
             // lblUserName
             // 
             lblUserName.AutoSize = true;
             lblUserName.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblUserName.Location = new Point(110, 640);
-            lblUserName.Margin = new Padding(2, 0, 2, 0);
+            lblUserName.Location = new Point(68, 400);
+            lblUserName.Margin = new Padding(1, 0, 1, 0);
             lblUserName.Name = "lblUserName";
-            lblUserName.Size = new Size(164, 33);
+            lblUserName.Size = new Size(102, 20);
             lblUserName.TabIndex = 32;
             lblUserName.Text = "User Name";
             // 
             // txtBoxPort
             // 
             txtBoxPort.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxPort.Location = new Point(953, 596);
-            txtBoxPort.Margin = new Padding(2, 5, 2, 5);
+            txtBoxPort.Location = new Point(586, 372);
+            txtBoxPort.Margin = new Padding(1, 3, 1, 3);
             txtBoxPort.Name = "txtBoxPort";
-            txtBoxPort.Size = new Size(76, 39);
+            txtBoxPort.Size = new Size(48, 27);
             txtBoxPort.TabIndex = 35;
             txtBoxPort.Text = "22";
             toolTip1.SetToolTip(txtBoxPort, "sshのポート番号");
@@ -383,21 +384,21 @@
             // 
             lblPort.AutoSize = true;
             lblPort.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblPort.Location = new Point(845, 596);
-            lblPort.Margin = new Padding(2, 0, 2, 0);
+            lblPort.Location = new Point(520, 372);
+            lblPort.Margin = new Padding(1, 0, 1, 0);
             lblPort.Name = "lblPort";
-            lblPort.Size = new Size(73, 33);
+            lblPort.Size = new Size(45, 20);
             lblPort.TabIndex = 34;
             lblPort.Text = "Port";
             // 
             // btnBrowse
             // 
             btnBrowse.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            btnBrowse.Location = new Point(953, 397);
-            btnBrowse.Margin = new Padding(3, 4, 3, 4);
+            btnBrowse.Location = new Point(586, 248);
+            btnBrowse.Margin = new Padding(2, 2, 2, 2);
             btnBrowse.Name = "btnBrowse";
-            btnBrowse.Size = new Size(142, 67);
-            btnBrowse.TabIndex = 36;
+            btnBrowse.Size = new Size(87, 42);
+            btnBrowse.TabIndex = 13;
             btnBrowse.Text = "確認";
             toolTip1.SetToolTip(btnBrowse, "ブラウザーで確認する");
             btnBrowse.UseVisualStyleBackColor = true;
@@ -407,79 +408,82 @@
             // 
             lblYouTube.AutoSize = true;
             lblYouTube.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblYouTube.Location = new Point(110, 931);
-            lblYouTube.Margin = new Padding(2, 0, 2, 0);
+            lblYouTube.Location = new Point(68, 582);
+            lblYouTube.Margin = new Padding(1, 0, 1, 0);
             lblYouTube.Name = "lblYouTube";
-            lblYouTube.Size = new Size(201, 33);
+            lblYouTube.Size = new Size(126, 20);
             lblYouTube.TabIndex = 37;
             lblYouTube.Text = "YouTube URL";
             // 
             // txtBoxYouTube
             // 
             txtBoxYouTube.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxYouTube.Location = new Point(453, 925);
-            txtBoxYouTube.Margin = new Padding(2, 5, 2, 5);
+            txtBoxYouTube.Location = new Point(279, 578);
+            txtBoxYouTube.Margin = new Padding(1, 3, 1, 3);
             txtBoxYouTube.Name = "txtBoxYouTube";
-            txtBoxYouTube.Size = new Size(726, 39);
-            txtBoxYouTube.TabIndex = 38;
+            txtBoxYouTube.Size = new Size(448, 27);
+            txtBoxYouTube.TabIndex = 11;
             // 
             // chkBoxInitSend
             // 
             chkBoxInitSend.AutoSize = true;
             chkBoxInitSend.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            chkBoxInitSend.Location = new Point(110, 849);
-            chkBoxInitSend.Margin = new Padding(3, 4, 3, 4);
+            chkBoxInitSend.Location = new Point(68, 531);
+            chkBoxInitSend.Margin = new Padding(2, 2, 2, 2);
             chkBoxInitSend.Name = "chkBoxInitSend";
-            chkBoxInitSend.Size = new Size(418, 37);
-            chkBoxInitSend.TabIndex = 40;
+            chkBoxInitSend.Size = new Size(262, 24);
+            chkBoxInitSend.TabIndex = 39;
             chkBoxInitSend.Text = "  CSS, JS ファイルも転送する";
             chkBoxInitSend.UseVisualStyleBackColor = true;
             // 
             // lblSQLServer
             // 
             lblSQLServer.AutoSize = true;
-            lblSQLServer.Location = new Point(778, 125);
+            lblSQLServer.Location = new Point(479, 78);
+            lblSQLServer.Margin = new Padding(2, 0, 2, 0);
             lblSQLServer.Name = "lblSQLServer";
-            lblSQLServer.Size = new Size(234, 32);
+            lblSQLServer.Size = new Size(144, 20);
             lblSQLServer.TabIndex = 42;
             lblSQLServer.Text = "<--SQL Serverの名前";
             // 
             // lblHTMLFiles
             // 
             lblHTMLFiles.AutoSize = true;
-            lblHTMLFiles.Location = new Point(845, 339);
+            lblHTMLFiles.Location = new Point(520, 212);
+            lblHTMLFiles.Margin = new Padding(2, 0, 2, 0);
             lblHTMLFiles.Name = "lblHTMLFiles";
-            lblHTMLFiles.Size = new Size(206, 32);
+            lblHTMLFiles.Size = new Size(128, 20);
             lblHTMLFiles.TabIndex = 43;
             lblHTMLFiles.Text = "HTML形式のFile名";
             // 
             // txtBoxEventNo
             // 
             txtBoxEventNo.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            txtBoxEventNo.Location = new Point(450, 185);
-            txtBoxEventNo.Margin = new Padding(2, 5, 2, 5);
+            txtBoxEventNo.Location = new Point(277, 116);
+            txtBoxEventNo.Margin = new Padding(1, 3, 1, 3);
             txtBoxEventNo.Name = "txtBoxEventNo";
-            txtBoxEventNo.Size = new Size(55, 39);
-            txtBoxEventNo.TabIndex = 45;
+            txtBoxEventNo.Size = new Size(35, 27);
+            txtBoxEventNo.TabIndex = 2;
             txtBoxEventNo.TextAlign = HorizontalAlignment.Right;
             // 
             // lblEventNo
             // 
             lblEventNo.AutoSize = true;
             lblEventNo.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
-            lblEventNo.Location = new Point(110, 190);
-            lblEventNo.Margin = new Padding(2, 0, 2, 0);
+            lblEventNo.Location = new Point(68, 119);
+            lblEventNo.Margin = new Padding(1, 0, 1, 0);
             lblEventNo.Name = "lblEventNo";
-            lblEventNo.Size = new Size(143, 33);
+            lblEventNo.Size = new Size(89, 20);
             lblEventNo.TabIndex = 44;
             lblEventNo.Text = "大会番号";
             // 
             // pictureBox3
             // 
             pictureBox3.Image = Properties.Resources.image1;
-            pictureBox3.Location = new Point(795, 255);
+            pictureBox3.Location = new Point(489, 159);
+            pictureBox3.Margin = new Padding(2, 2, 2, 2);
             pictureBox3.Name = "pictureBox3";
-            pictureBox3.Size = new Size(33, 195);
+            pictureBox3.Size = new Size(20, 122);
             pictureBox3.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox3.TabIndex = 48;
             pictureBox3.TabStop = false;
@@ -526,18 +530,19 @@
             panel1.Controls.Add(lblIndexFile);
             panel1.Controls.Add(lblHtmlPath);
             panel1.Controls.Add(lblServerName);
-            panel1.Location = new Point(0, 4);
+            panel1.Location = new Point(0, 2);
+            panel1.Margin = new Padding(2, 2, 2, 2);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1341, 1270);
+            panel1.Size = new Size(825, 794);
             panel1.TabIndex = 49;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1331, 1205);
+            ClientSize = new Size(906, 764);
             Controls.Add(panel1);
-            Margin = new Padding(2, 5, 2, 5);
+            Margin = new Padding(1, 3, 1, 3);
             Name = "Form1";
             Text = "(C)一般社団法人大津市水泳協会";
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
