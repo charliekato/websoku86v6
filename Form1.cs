@@ -11,12 +11,13 @@ namespace websoku86v6
     {
         readonly static string myName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 #if USBBOOT
-        readonly static string workDir = ".\\";
+        readonly static string workDir = "..\\html\\";
+        readonly static string iniFile =  myName + ".ini";
 #else
         readonly static string workDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
              "\\" + myName + "\\";
+        readonly static string iniFile =  workDir+myName + ".ini";
 #endif
-        readonly static string iniFile = workDir + myName + ".ini";
         string serverName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
                 secKeyFile = "";
