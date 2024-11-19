@@ -589,12 +589,12 @@
         private System.Windows.Forms.Label lblYouTube;
         private System.Windows.Forms.TextBox txtBoxYouTube;
         private System.Windows.Forms.CheckBox chkBoxInitSend;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        //private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label lblSQLServer;
         private System.Windows.Forms.Label lblHTMLFiles;
         private System.Windows.Forms.TextBox txtBoxEventNo;
         private System.Windows.Forms.Label lblEventNo;
-        private PictureBox pictureBox2;
+        //private PictureBox pictureBox2;
         private PictureBox pictureBox3;
         private Panel panel1;
     }
