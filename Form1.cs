@@ -1673,7 +1673,7 @@ namespace websoku86v6
                 sw.WriteLine($"scoreFile>{scoreFile}");
                 sw.WriteLine($"hostName>{hostName}");
                 sw.WriteLine($"port>{port}");
-                sw.WriteLine($"userName>{userName}");
+                //sw.WriteLine($"userName>{userName}");
                 sw.WriteLine($"keyFile>{keyFile}");
             }
 
