@@ -1382,41 +1382,45 @@ namespace websoku86v6
                 {
                     while (dr.Read())
                     {
-                        result = new Result();
-                        result.uid = Misc.Obj2Int(dr["UID"]);
-                        numSwimmers4UID[result.uid]++;
-                        result.kumi = Misc.Obj2Int(dr["‘g"]);
-                        result.swimmerID = Misc.Obj2Int(dr["‘Iè”Ô†"]);
-                        result.rswimmer[0] = Misc.Obj2Int(dr["‘æ‚P‰jÒ"]);
-                        result.rswimmer[1] = Misc.Obj2Int(dr["‘æ‚Q‰jÒ"]);
-                        result.rswimmer[2] = Misc.Obj2Int(dr["‘æ‚R‰jÒ"]);
-                        result.rswimmer[3] = Misc.Obj2Int(dr["‘æ‚S‰jÒ"]);
-                        result.laneNo = Misc.Obj2Int(dr["…˜H"]);
-                        result.reasonCode = Misc.Obj2Int(dr["–—R“ü—ÍƒXƒe[ƒ^ƒX"]);
-                        result.newRecord = Misc.Obj2String(dr["V‹L˜^ˆóüƒ}[ƒN"]);
-                        for (int i = 0; i < 60; i++)
+                        if (Misc.Obj2Int(dr["UID"])<=maxUID)
                         {
-                            result.lapTime[i] = Misc.Obj2String(dr[lapstring[i]]);
+                            result = new Result();
+                            result.uid = Misc.Obj2Int(dr["UID"]);
+                            numSwimmers4UID[result.uid]++;  // sometimes uid gets bigger than maxuid
+                            result.kumi = Misc.Obj2Int(dr["‘g"]);
+                            result.swimmerID = Misc.Obj2Int(dr["‘Iè”Ô†"]);
+                            result.rswimmer[0] = Misc.Obj2Int(dr["‘æ‚P‰jÒ"]);
+                            result.rswimmer[1] = Misc.Obj2Int(dr["‘æ‚Q‰jÒ"]);
+                            result.rswimmer[2] = Misc.Obj2Int(dr["‘æ‚R‰jÒ"]);
+                            result.rswimmer[3] = Misc.Obj2Int(dr["‘æ‚S‰jÒ"]);
+                            result.laneNo = Misc.Obj2Int(dr["…˜H"]);
+                            result.reasonCode = Misc.Obj2Int(dr["–—R“ü—ÍƒXƒe[ƒ^ƒX"]);
+                            result.newRecord = Misc.Obj2String(dr["V‹L˜^ˆóüƒ}[ƒN"]);
+                            for (int i = 0; i < 60; i++)
+                            {
+                                result.lapTime[i] = Misc.Obj2String(dr[lapstring[i]]);
+
+                            }
+                            if ((result.reasonCode == 0) || (result.reasonCode == 4))
+                            {
+                                result.goalTime = Misc.TimeStrToInt(Misc.Obj2String(dr["ƒS[ƒ‹"]));
+                            }
+                            if (result.reasonCode == CONSTANTS.DQ)
+                            {
+                                result.goalTime = CONSTANTS.TIME4DQ;
+                            }
+                            if (result.reasonCode == CONSTANTS.DNS)
+                            {
+                                result.goalTime = CONSTANTS.TIME4DNS;
+                            }
+                            if (result.reasonCode == CONSTANTS.DNSM)
+                            {
+                                result.goalTime = CONSTANTS.TIME4DNSM;
+                            }
+                            result.rank = 1;
+                            resultList.Add(result);
 
                         }
-                        if ((result.reasonCode == 0) || (result.reasonCode == 4))
-                        {
-                            result.goalTime = Misc.TimeStrToInt(Misc.Obj2String(dr["ƒS[ƒ‹"]));
-                        }
-                        if (result.reasonCode == CONSTANTS.DQ)
-                        {
-                            result.goalTime = CONSTANTS.TIME4DQ;
-                        }
-                        if (result.reasonCode == CONSTANTS.DNS)
-                        {
-                            result.goalTime = CONSTANTS.TIME4DNS;
-                        }
-                        if (result.reasonCode == CONSTANTS.DNSM)
-                        {
-                            result.goalTime = CONSTANTS.TIME4DNSM;
-                        }
-                        result.rank = 1;
-                        resultList.Add(result);
                     }
                 }
                 // }
@@ -1487,6 +1491,8 @@ namespace websoku86v6
         public static bool IsDQorDNS(int code) { return (code >= 1); }
         public static string TimeSubtract(string time1, string time2)
         {
+            if (time1 == "" || time1 == " ") return "";
+            if (time2 == "" || time2 == " ") return "";
             long intTime1 = Str2Milliseconds(time1);
             long intTime2 = Str2Milliseconds(time2);
             long answer = intTime1 - intTime2;
@@ -1508,19 +1514,22 @@ namespace websoku86v6
             if (myTime == "") return 0;
             long millisecond;
             long myMinutes;
-            int colonPos = myTime.IndexOf(":");
-            if (colonPos > 0)
-            {
-                myMinutes = long.Parse(myTime.Substring(0, colonPos));
-                millisecond = long.Parse(myTime.Substring(colonPos + 1, 5).Replace(".", ""));
-            }
-            else
-            {
-                myMinutes = 0;
-                millisecond = long.Parse(myTime.Replace(".", ""));
-            }
+            try { 
+                int colonPos = myTime.IndexOf(":");
+                if (colonPos > 0)
+                {
+                    myMinutes = long.Parse(myTime.Substring(0, colonPos));
+                    millisecond = long.Parse(myTime.Substring(colonPos + 1, 5).Replace(".", ""));
+                }
+                else
+                {
+                    myMinutes = 0;
+                    millisecond = long.Parse(myTime.Replace(".", ""));
+                }
 
-            return 6000 * myMinutes + millisecond;
+                return 6000 * myMinutes + millisecond;
+            }
+            catch { return 0; }
         }
 
 
