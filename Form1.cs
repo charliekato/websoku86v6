@@ -2,7 +2,7 @@
 //using Microsoft.VisualBasic;
 using Renci.SshNet;
 //using System.Windows.Forms;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Net;
 
 namespace websoku86v6
@@ -175,7 +175,9 @@ namespace websoku86v6
 
     public static class Html
     {
-        static string thisYouTubeURL;
+        static string thisYouTubeURL="";
+//        static string extraMessageURL = "https://result.swim.or.jp/tournament/list?member_group_code=25&official_group_code=25";
+//        static string extraMessage = "県内の過去のレースの結果はこちらです。";
         public static void CreateHTML(
             //string mdbFile,    // Seiko Result System database.
             string serverName,
@@ -563,16 +565,16 @@ namespace websoku86v6
             writer.WriteLine($"<meta charset=\"Shift_JIS\"><title>{mdb.GetEventName()} </title>");
             if (fType == 1)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/cman.css\">");
-                writer.WriteLine("<script type=\"text/javascript\" src=\"cman.js\"></script>");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/cman.css\">");
+                writer.WriteLine("<script type=\"text/javascript\" src=\"/cman.js\"></script>");
             }
             if (fType == 2)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swim.css\">");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/swim.css\">");
             }
             if (fType == 3)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swimcall.css\">");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/swimcall.css\">");
             }
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
@@ -584,6 +586,7 @@ namespace websoku86v6
             {
                 writer.WriteLine($"<h1><a href=\"{thisYouTubeURL} \">YouTube ライブ配信はこちら</a></h1>");
             }
+//            writer.WriteLine($"<h1><a href=\" {extraMessageURL} \">" + extraMessage + "</a></h1>");
 
         }
         static void CreateIndexHTML(MDBInterface mdb, string myName, string rankingFile, string kanproFile)
@@ -658,7 +661,7 @@ namespace websoku86v6
         private readonly string[] DistanceTable = new string[11];
         private readonly string[] YoketsuTable = new string[9];
 
-        private const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw";
+        private const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
         private const string magicHead = "Server=";
         private string[] genderStr;
         public bool GameRecordAvailable;
@@ -1372,8 +1375,8 @@ namespace websoku86v6
                   "FROM 記録 " +
                   " INNER JOIN ラップ ON 記録.競技番号 = ラップ.競技番号 AND " +
                   " 記録.組 = ラップ.組 AND 記録.水路 = ラップ.水路 " +
-                  " where 記録.大会番号=" + eventNo + " AND ラップ.大会番号 =" +
-                    eventNo + " ORDER BY UID, 組, 水路 ; ";
+                  " where 記録.大会番号=" + eventNo + " AND ラップ.大会番号 =" + eventNo + 
+                  " and 選手番号>0 ORDER BY UID, 組, 水路 ; ";
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 //   try
                 //   {
@@ -1382,7 +1385,8 @@ namespace websoku86v6
                 {
                     while (dr.Read())
                     {
-                        if (Misc.Obj2Int(dr["UID"])<=maxUID)
+                        //if (Misc.Obj2Int(dr["UID"])<=maxUID)
+                        if (Misc.Obj2Int(dr["UID"])>0)
                         {
                             result = new Result();
                             result.uid = Misc.Obj2Int(dr["UID"]);
@@ -1434,7 +1438,7 @@ namespace websoku86v6
         void AnalyzeResult()
         {
             int uid;
-            for (uid = 1; uid <= MaxProgramNo; uid++)
+            for (uid = 1; uid <= MaxUID; uid++)
             {
                 int myStart = 1, myEnd = resultList.Count, flag;
                 flag = 0;
