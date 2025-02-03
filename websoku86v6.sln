@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "websoku86v6", "websoku86v6.csproj", "{C2B2DC38-0C5F-4954-8DE2-E81C5D7874AE}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "websokuv6", "..\installer\websokuv6\websokuv6.vdproj", "{9BF7BFFE-D369-48C5-A940-DB58B4B9EE31}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup1", "Setup1\Setup1.vdproj", "{0CB499C8-971A-4BB3-8E0A-6E996B24451B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{C2B2DC38-0C5F-4954-8DE2-E81C5D7874AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C2B2DC38-0C5F-4954-8DE2-E81C5D7874AE}.Release|x86.ActiveCfg = Release|x86
 		{C2B2DC38-0C5F-4954-8DE2-E81C5D7874AE}.Release|x86.Build.0 = Release|x86
-		{9BF7BFFE-D369-48C5-A940-DB58B4B9EE31}.Debug|Any CPU.ActiveCfg = Debug
-		{9BF7BFFE-D369-48C5-A940-DB58B4B9EE31}.Debug|x86.ActiveCfg = Debug
-		{9BF7BFFE-D369-48C5-A940-DB58B4B9EE31}.Release|Any CPU.ActiveCfg = Release
-		{9BF7BFFE-D369-48C5-A940-DB58B4B9EE31}.Release|x86.ActiveCfg = Release
+		{0CB499C8-971A-4BB3-8E0A-6E996B24451B}.Debug|Any CPU.ActiveCfg = Debug
+		{0CB499C8-971A-4BB3-8E0A-6E996B24451B}.Debug|x86.ActiveCfg = Debug
+		{0CB499C8-971A-4BB3-8E0A-6E996B24451B}.Release|Any CPU.ActiveCfg = Release
+		{0CB499C8-971A-4BB3-8E0A-6E996B24451B}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

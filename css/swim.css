@@ -1,0 +1,76 @@
+.score table {
+  width:100%;
+  border:1px solid #000;
+  border-collapse:collapse;
+  margin-bottom:20px;
+  font-size: 2.0vw !important;
+  font-size: 15px;
+
+}
+.score  th {
+  border:1px solid #000;
+}
+.score  td{
+  border:1px solid #000;
+}
+
+
+
+.vertical {
+  writing-mode: tb-lr;
+  writing-mode: vertical-lr;
+  -webkit-writing-mode: vertical-lr;
+  letter-spacing: .2em;
+}
+    
+body h1 {
+	font-size: 3.5vw !important;
+	font-size: 24px;
+}
+body h2 {
+	font-size: 3.4vw !important;
+	font-size: 22px;
+}
+body h3 {
+	font-size: 3.3vw !important;
+	font-size: 21px;
+}
+
+body h4 {
+
+	font-size: 3.2vw !important;
+	font-size: 20px;
+}
+
+body p {
+	font-size: 3.0vw !important;
+	font-size: 20px;
+}
+body table {
+	font-size: 2.5vw !important;
+	font-size: 20px;
+}
+
+.gr {
+	font-size: 2.5vw !important;
+	font-size: 18px;
+}
+.small {
+	font-size: 1.8vw !important;
+	font-size: 16px;
+}
+
+.lap_container {
+	text-align:center;
+}
+.lap_time {
+	display:inline-block;text-align:right;
+	width:6.0em;
+	color:#0000e0;
+}
+
+.footer {
+  font-size: 12px;
+}
+
+

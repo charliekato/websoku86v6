@@ -1,0 +1,121 @@
+/* === h2 font ===================================== */
+body h2 {
+	background : #ceb;
+	font-size: 2.0vw !important;
+}
+/* === footer font size ============================= */
+.footer {
+  font-size: 12px;
+}
+/* -- hide area ----*/
+.nondisp {
+	display: none;
+}
+/* === Filter button ============================ */
+.tfArea{
+  display    : inline-block;
+  position   : relative;
+}
+.tfImg{
+  display    : inline-block;
+  width      : 8px;
+  height     : 8px;
+  background : #eee;
+  border     : 1px solid #777;
+  margin     : 1px 3px;
+  padding    : 3px;
+  cursor     : pointer;
+}
+/* === Filter button when cursor hovered. ======= */
+.tfImg:hover{
+  background : #FFD700;
+}
+/* === Color of filter button============ */
+.tfImg path{
+  fill       : #777;
+}
+/* === フィルタリスト ============================ */
+.tfList{
+  display    : inline-block;
+  position   : absolute;
+  max-width  : 250px;
+  min-width  : 140px;
+  background : #fff;
+  border     : 1px solid #777;
+  top        : 15px;
+  left       : 0;
+  line-height: 1.1;
+  font-weight: normal;
+}
+/* === フィルタリスト内のform ==================== */
+.tfList form{
+  max-height : 150px;           /* 縦幅 */
+  overflow   : scroll;
+  overflow   : overflow-y;
+  overflow   : auto;
+}
+/* === フィルタリスト内のチェックボックス ======== */
+.tfMeisai{
+  text-align : left;
+  padding    : 2px;
+}
+/* === フィルタリスト内の文字位置合わせ ========== */
+.tfMeisai label{
+  padding    : 0 10px 0 3px;
+}
+/* === OK/CANCELボタン =========================== */
+.tfBtnArea{
+  text-align : center;
+  font-size  : 8pt;
+  padding    : 3px 5px;
+}
+.tfBtnArea input{
+  display    : inline-block;
+  margin     : 0 5px;
+}
+/* === 含むボタンの入力エリア ==================== */
+.tfInStr{
+  padding    : 5px 3px;
+  border-top : 1px solid #999;
+  border-bottom: 1px solid #999;
+}
+.tfInStr input{
+  box-sizing : border-box;
+  width      : 100%;
+  padding    : 1px 3px;
+  font-weight: normal;
+  font-size  : 95%;
+  border     : 1px solid #ccc;
+}
+/* === フィルタ非表示 ============================ */
+#sampleTable tr[cmanFilterNone]{
+  display    : none;
+}
+/* === フィルタ非表示行と次行の間を二重線にする == */
+#sampleTable tr[cmanFilterNone] + tr td{
+  border-top : 3px double #777;
+}
+ /* --- （参考）テーブル全体のスタイル指定 ------- */
+#sampleTable {
+  width          : 100%;
+  border-collapse: collapse;         /* 境界線結合 */
+  border-spacing : 0;                /* 罫線間余白 */
+  font-size      : 2.3vw;            /* was 9px */
+}
+ /* --- ヘッダーのスタイル指定 ------------------- */
+#sampleTable th {
+  text-align    : center;            /* 文字位置   */
+  font-weight   : bold;              /* 太文字     */
+  padding       : 3px 5px;          /* 余白       */
+  border        : 1px #666666 solid; /* 罫線       */
+  background    : #99ccff;           /* 背景色     */
+  white-space   : nowrap;
+}
+ /* --- 明細のスタイル指定 ----------------------- */
+#sampleTable td {
+ /* text-align    : right;            */
+  padding       : 3px 5px;         
+  border        : 1px #666666 solid;
+  white-space   : nowrap;
+}
+
