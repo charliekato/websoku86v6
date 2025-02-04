@@ -1,9 +1,10 @@
-#define USBBOOT
+//#define USBBOOT
 //using Microsoft.VisualBasic;
 using Renci.SshNet;
 //using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 using System.Net;
+using System.Data;
 
 namespace websoku86v6
 {
@@ -565,28 +566,28 @@ namespace websoku86v6
             writer.WriteLine($"<meta charset=\"Shift_JIS\"><title>{mdb.GetEventName()} </title>");
             if (fType == 1)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/cman.css\">");
-                writer.WriteLine("<script type=\"text/javascript\" src=\"/cman.js\"></script>");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/cman.css\">");
+                writer.WriteLine("<script type=\"text/javascript\" src=\"cman.js\"></script>");
             }
             if (fType == 2)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/swim.css\">");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swim.css\">");
             }
             if (fType == 3)
             {
-                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"/css/swimcall.css\">");
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swimcall.css\">");
             }
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
             if (fType < 3)
             {
-                writer.WriteLine($"<h2>{mdb.GetEventName()} &nbsp;&nbsp;開催地 : {mdb.GetEventVenue()} &nbsp;&nbsp;期日 : {mdb.GetEventDate()}</h2>");
+                writer.WriteLine($"<h3>{mdb.GetEventName()} &nbsp;&nbsp;開催地 : {mdb.GetEventVenue()} &nbsp;&nbsp;期日 : {mdb.GetEventDate()}</h3>");
             }
             if (thisYouTubeURL != "")
             {
-                writer.WriteLine($"<h1><a href=\"{thisYouTubeURL} \">YouTube ライブ配信はこちら</a></h1>");
+                writer.WriteLine($"<h3><a href=\"{thisYouTubeURL} \">YouTube ライブ配信はこちら</a></h3>");
             }
-//            writer.WriteLine($"<h1><a href=\" {extraMessageURL} \">" + extraMessage + "</a></h1>");
+//            writer.WriteLine($"<h3><a href=\" {extraMessageURL} \">" + extraMessage + "</a></h3>");
 
         }
         static void CreateIndexHTML(MDBInterface mdb, string myName, string rankingFile, string kanproFile)
@@ -1014,15 +1015,15 @@ namespace websoku86v6
 
                     connection.Open();
 
-                    string query = "SELECT プログラム.競技番号 as UID, プログラム.表示用競技番号 as PrgNo, 新記録.記録  as 記録 FROM プログラム " +
-                                   "INNER JOIN 新記録 ON プログラム.種目コード = 新記録.種目コード " +
-                                   "AND プログラム.距離コード = 新記録.距離コード " +
-                                   "AND プログラム.クラス番号 = 新記録.記録区分番号 " +
-                                   "AND プログラム.性別コード = 新記録.性別コード " +
-                                   "WHERE プログラム.大会番号=" + eventNo + ";";
-
+                    string query = @"SELECT プログラム.競技番号 as UID, プログラム.表示用競技番号 as PrgNo, 新記録.記録  as 記録 FROM プログラム 
+                                   INNER JOIN 新記録 ON プログラム.種目コード = 新記録.種目コード 
+                                   AND プログラム.距離コード = 新記録.距離コード 
+                                   AND プログラム.クラス番号 = 新記録.記録区分番号 
+                                   AND プログラム.性別コード = 新記録.性別コード 
+                                   WHERE プログラム.大会番号= @eventNo and 新記録.大会番号=@eventNo;";
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
+                        command.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -1354,39 +1355,42 @@ namespace websoku86v6
             using (conn)
             {
                 Result result;
-                string myQuery = "SELECT  DISTINCT 記録.競技番号 as UID ,ゴール, 選手番号,  " +
-                  "第１泳者, 第２泳者, 第３泳者, 第４泳者,  " +
-                  " ラップ.[25m] as lap25,  ラップ.[50m] as lap50, ラップ.[75m] as lap75, ラップ.[100m] as lap100, " +
-                    "ラップ.[125m] as lap125, ラップ.[150m] as lap150, ラップ.[175m] as lap175, ラップ.[200m] as lap200, " +
-                    "ラップ.[225m] as lap225, ラップ.[250m] as lap250, ラップ.[275m] as lap275, ラップ.[300m] as lap300, " +
-                    "ラップ.[325m] as lap325, ラップ.[350m] as lap350, ラップ.[375m] as lap375, ラップ.[400m] as lap400, " +
-                    "ラップ.[425m] as lap425, ラップ.[450m] as lap450, ラップ.[475m] as lap475, ラップ.[500m] as lap500, " +
-                    "ラップ.[525m] as lap525, ラップ.[550m] as lap550, ラップ.[575m] as lap575, ラップ.[600m] as lap600, " +
-                    "ラップ.[625m] as lap625, ラップ.[650m] as lap650, ラップ.[675m] as lap675, ラップ.[700m] as lap700, " +
-                    "ラップ.[725m] as lap725, ラップ.[750m] as lap750, ラップ.[775m] as lap775, ラップ.[800m] as lap800, " +
-                    "ラップ.[825m] as lap825, ラップ.[850m] as lap850, ラップ.[875m] as lap875, ラップ.[900m] as lap900, " +
-                    "ラップ.[925m] as lap925, ラップ.[950m] as lap950, ラップ.[975m] as lap975, ラップ.[1000m] as lap1000, " +
-                    "ラップ.[1025m] as lap1025, ラップ.[1050m] as lap1050, ラップ.[1075m] as lap1075, ラップ.[1100m] as lap1100, " +
-                    "ラップ.[1125m] as lap1125, ラップ.[1150m] as lap1150, ラップ.[1175m] as lap1175, ラップ.[1200m] as lap1200, " +
-                    "ラップ.[1225m] as lap1225, ラップ.[1250m] as lap1250, ラップ.[1275m] as lap1275, ラップ.[1300m] as lap1300, " +
-                    "ラップ.[1325m] as lap1325, ラップ.[1350m] as lap1350, ラップ.[1375m] as lap1375, ラップ.[1400m] as lap1400, " +
-                    "ラップ.[1425m] as lap1425, ラップ.[1450m] as lap1450, ラップ.[1475m] as lap1475, ラップ.[1500m] as lap1500, " +
-                  " 記録.組 as 組, 記録.水路 as 水路, 事由入力ステータス, 新記録印刷マーク " +
-                  "FROM 記録 " +
-                  " INNER JOIN ラップ ON 記録.競技番号 = ラップ.競技番号 AND " +
-                  " 記録.組 = ラップ.組 AND 記録.水路 = ラップ.水路 " +
-                  " where 記録.大会番号=" + eventNo + " AND ラップ.大会番号 =" + eventNo + 
-                  " and 選手番号>0 ORDER BY UID, 組, 水路 ; ";
+                string myQuery = @"SELECT  DISTINCT 記録.競技番号 as UID ,ゴール, 選手番号,  
+                  第１泳者, 第２泳者, 第３泳者, 第４泳者,  
+                   ラップ.[25m] as lap25,  ラップ.[50m] as lap50, ラップ.[75m] as lap75, ラップ.[100m] as lap100, 
+                    ラップ.[125m] as lap125, ラップ.[150m] as lap150, ラップ.[175m] as lap175, ラップ.[200m] as lap200, 
+                    ラップ.[225m] as lap225, ラップ.[250m] as lap250, ラップ.[275m] as lap275, ラップ.[300m] as lap300, 
+                    ラップ.[325m] as lap325, ラップ.[350m] as lap350, ラップ.[375m] as lap375, ラップ.[400m] as lap400, 
+                    ラップ.[425m] as lap425, ラップ.[450m] as lap450, ラップ.[475m] as lap475, ラップ.[500m] as lap500, 
+                    ラップ.[525m] as lap525, ラップ.[550m] as lap550, ラップ.[575m] as lap575, ラップ.[600m] as lap600, 
+                    ラップ.[625m] as lap625, ラップ.[650m] as lap650, ラップ.[675m] as lap675, ラップ.[700m] as lap700, 
+                    ラップ.[725m] as lap725, ラップ.[750m] as lap750, ラップ.[775m] as lap775, ラップ.[800m] as lap800, 
+                    ラップ.[825m] as lap825, ラップ.[850m] as lap850, ラップ.[875m] as lap875, ラップ.[900m] as lap900, 
+                    ラップ.[925m] as lap925, ラップ.[950m] as lap950, ラップ.[975m] as lap975, ラップ.[1000m] as lap1000, 
+                    ラップ.[1025m] as lap1025, ラップ.[1050m] as lap1050, ラップ.[1075m] as lap1075, ラップ.[1100m] as lap1100, 
+                    ラップ.[1125m] as lap1125, ラップ.[1150m] as lap1150, ラップ.[1175m] as lap1175, ラップ.[1200m] as lap1200, 
+                    ラップ.[1225m] as lap1225, ラップ.[1250m] as lap1250, ラップ.[1275m] as lap1275, ラップ.[1300m] as lap1300, 
+                    ラップ.[1325m] as lap1325, ラップ.[1350m] as lap1350, ラップ.[1375m] as lap1375, ラップ.[1400m] as lap1400, 
+                    ラップ.[1425m] as lap1425, ラップ.[1450m] as lap1450, ラップ.[1475m] as lap1475, ラップ.[1500m] as lap1500, 
+                   記録.組 as 組, 記録.水路 as 水路, 事由入力ステータス, 新記録印刷マーク 
+                  FROM 記録 
+                   INNER JOIN ラップ ON 記録.競技番号 = ラップ.競技番号 AND 
+                   記録.組 = ラップ.組 AND 記録.水路 = ラップ.水路 
+                   where 記録.大会番号= @eventNo  AND ラップ.大会番号 =  @eventNo 
+                    and ラップ.ラップ区分=0
+                   and 選手番号>0 ORDER BY UID, 組, 水路 ; ";
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 //   try
                 //   {
+                comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
                 conn.Open();
                 using (var dr = comm.ExecuteReader())
                 {
                     while (dr.Read())
                     {
                         //if (Misc.Obj2Int(dr["UID"])<=maxUID)
-                        if (Misc.Obj2Int(dr["UID"])>0)
+                        //if (Misc.Obj2Int(dr["UID"])>0)
+                        if (Misc.Obj2Int(dr["選手番号"])>0)
                         {
                             result = new Result();
                             result.uid = Misc.Obj2Int(dr["UID"]);
@@ -1408,15 +1412,15 @@ namespace websoku86v6
                             if ((result.reasonCode == 0) || (result.reasonCode == 4))
                             {
                                 result.goalTime = Misc.TimeStrToInt(Misc.Obj2String(dr["ゴール"]));
-                            }
+                            } else
                             if (result.reasonCode == CONSTANTS.DQ)
                             {
                                 result.goalTime = CONSTANTS.TIME4DQ;
-                            }
+                            } else
                             if (result.reasonCode == CONSTANTS.DNS)
                             {
                                 result.goalTime = CONSTANTS.TIME4DNS;
-                            }
+                            } else 
                             if (result.reasonCode == CONSTANTS.DNSM)
                             {
                                 result.goalTime = CONSTANTS.TIME4DNSM;
@@ -1549,6 +1553,10 @@ namespace websoku86v6
         public static bool IsRelay(string style)
         {
             return style.Contains("リレー");
+        }
+        public static bool IsRelay(int styleNo)
+        {
+            return (styleNo > 5);
         }
         public static string RecordConcatenate(object stra, object strb, object strc)
         {
