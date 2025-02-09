@@ -50,6 +50,10 @@ namespace websoku86v6
             txtBoxKeyFile.Text = secKeyFile;
             InitTimer();
         }
+        public bool MustSendCSS()
+        {
+            return this.chkBoxInitSend.Checked;
+        }
         public static System.Windows.Forms.Timer timer;
 
         private void btnBrowse_Click(object sender, EventArgs e)
@@ -88,7 +92,8 @@ namespace websoku86v6
                 Convert.ToInt32(txtBoxPort.Text),
                 txtBoxUserName.Text,
                 txtBoxKeyFile.Text,
-                txtBoxYouTube.Text);
+                txtBoxYouTube.Text,
+                chkBoxInitSend.Checked);
             Cursor.Current = Cursors.Default;
 
         }
@@ -193,7 +198,8 @@ namespace websoku86v6
             int port,
             string userName,
             string keyFile,
-            string youTubeURL)
+            string youTubeURL,
+            bool mustSendCSS)
         {
             string indexFilePath;
             string rankingFilePath;
@@ -242,6 +248,12 @@ namespace websoku86v6
                 //read_score_rule();
                 //gen_team_score_html(teamScoreFilePath);
 
+            }
+            if (mustSendCSS)
+            {
+                Misc.SendFile(workDir + "\\cman.js", distDir + "cman.js", hostName, port, userName, keyFile);
+                Misc.SendFile(workDir + "\\css\\cman.css", distDir + "css/cman.css", hostName, port, userName, keyFile);
+                Misc.SendFile(workDir + "\\css\\swim.css", distDir + "css/swim.css", hostName, port, userName, keyFile);
             }
 
         }
@@ -294,13 +306,13 @@ namespace websoku86v6
                         if (mdb.RaceExist(uid))
                         {
                             PrintShumoku(mdb, sw, prgNo);
-                            sw.WriteLine("<div align=\"right\"> <a href=\"" + prgFile + "#PRGH" + prgNo + "\">レーン順の結果</a>&nbsp;");
+                            sw.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + prgFile + "#PRGH" + prgNo + "\">レーン順の結果</a>&nbsp;");
                             sw.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
                             sw.WriteLine("<br><br>");
                             sw.WriteLine("<table border=\"0\" width=\"100%\">");
                             sw.WriteLine("<tr><th align=\"left\" width=\"8%\">順位</th>" +
-                                "<th align=\"left\" width=\"29%\">氏名</th>" +
-                                "<th align=\"left\" width=\"34%\">チーム名</th>" +
+                                "<th align=\"left\" width=\"26%\">チーム名</th>" +
+                                "<th align=\"left\" width=\"37%\">氏名</th>" +
                                 "<th align=\"left\" width=\"17%\">タイム</th>" +
                                 "<th align=\"left\" width=\"12%\">新記録</th></tr>");
                         }
@@ -335,8 +347,8 @@ namespace websoku86v6
 
                                     if (Misc.IsRelay(mdb.GetStyleFromPrgNo(prgNo)))
                                     {
-                                        sw.WriteLine("<td valign=\"top\">" + HtmlName4Relay(mdb, result.rswimmer) + "</td>");
                                         sw.WriteLine("<td valign=\"top\">" + mdb.GetRelayTeamName(result.swimmerID) + "</td>");
+                                        sw.WriteLine("<td valign=\"top\">" + HtmlName4Relay(mdb, result.rswimmer) + "</td>");
                                     }
                                     else
                                     {
@@ -432,12 +444,23 @@ namespace websoku86v6
                 PrintTailAndClose(sw);
             }
         }
+/*
         static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer)
         {
             return mdb.GetSwimmerName(rswimmer[0]) + "<br>"
                 + mdb.GetSwimmerName(rswimmer[1]) + "<br>"
                 + mdb.GetSwimmerName(rswimmer[2]) + "<br>"
                 + mdb.GetSwimmerName(rswimmer[3]);
+
+        }
+*/
+        static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
+        {
+                           return mdb.GetSwimmerName(rswimmer[0]) + "&nbsp;&nbsp; " +
+                                             mdb.GetSwimmerName(rswimmer[1]) + "<br>" +
+                                             mdb.GetSwimmerName(rswimmer[2]) + "&nbsp; &nbsp;" +
+                                             mdb.GetSwimmerName(rswimmer[3]) + "</td>";
+
 
         }
         static void CreateHTMLProgramFormat(MDBInterface mdb, string srcFile, string indexFile, string rankingFile)
@@ -454,7 +477,7 @@ namespace websoku86v6
                     int uid = mdb.GetUIDFromPrgNo(prgNo);
 
                     PrintShumoku(mdb, writer, prgNo);
-                    writer.WriteLine("<div align=\"right\"> <a href=\"" + rankingFile + "#PRGH" + prgNo + "\">ランキング</a>&nbsp;");
+                    writer.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + rankingFile + "#PRGH" + prgNo + "\">ランキング</a>&nbsp;");
                     writer.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
                     PrintRaceResult(mdb, writer, prgNo, uid);
                 }
@@ -487,7 +510,11 @@ namespace websoku86v6
                         writer.WriteLine("<table border=\"0\" width=\"100%\">");
                     }
 
-                    string laneStr = (record.laneNo >= 50) ? "補欠" + (record.laneNo - 49).ToString() : record.laneNo.ToString();
+                    /* zero lane */
+                    int laneNo = record.laneNo;
+                    if (mdb.zeroUse) laneNo--;
+
+                    string laneStr = (record.laneNo >= 50) ? "補欠" + (record.laneNo - 49).ToString() : laneNo.ToString();
 
                     writer.WriteLine("<tr><td align=\"right\">" + laneStr + "</td>");
 
@@ -713,6 +740,7 @@ namespace websoku86v6
             get { return maxUID; }
         }
         int touchBoard; // 1--50m  2--100m  3--25m   4--50m 
+        public bool zeroUse { get; set; }
         public int lapCode { get; set; }
 
         private int[] UIDFromPrgNo;
@@ -1168,7 +1196,7 @@ namespace websoku86v6
             SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
             using (conn)
             {
-                string myQuery = "SELECT 大会名１,開催地,始期間,終期間 FROM 大会設定 where 大会番号=" + eventNo + ";";
+                string myQuery = "SELECT 大会名１,開催地,始期間,終期間, ゼロコース使用 FROM 大会設定 where 大会番号=" + eventNo + ";";
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 try
                 {
@@ -1186,6 +1214,7 @@ namespace websoku86v6
                             eventDate = Misc.Obj2String(dr["始期間"]) + "～" + Misc.Obj2String(dr["終期間"]);
                         }
                         eventVenue = Misc.Obj2String(dr["開催地"]);
+                        zeroUse = Convert.ToBoolean(dr["ゼロコース使用"]);
 
                     }
                 }
@@ -1378,7 +1407,7 @@ namespace websoku86v6
                    記録.組 = ラップ.組 AND 記録.水路 = ラップ.水路 
                    where 記録.大会番号= @eventNo  AND ラップ.大会番号 =  @eventNo 
                     and ラップ.ラップ区分=0
-                   and 選手番号>0 ORDER BY UID, 組, 水路 ; ";
+                 　ORDER BY UID, 組, 水路 ; ";
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 //   try
                 //   {
@@ -1388,9 +1417,9 @@ namespace websoku86v6
                 {
                     while (dr.Read())
                     {
-                        //if (Misc.Obj2Int(dr["UID"])<=maxUID)
+                        if (Misc.Obj2Int(dr["UID"])<=maxUID)
                         //if (Misc.Obj2Int(dr["UID"])>0)
-                        if (Misc.Obj2Int(dr["選手番号"])>0)
+                        //if (Misc.Obj2Int(dr["選手番号"])>0)
                         {
                             result = new Result();
                             result.uid = Misc.Obj2Int(dr["UID"]);
@@ -1694,7 +1723,7 @@ namespace websoku86v6
                 sw.WriteLine($"scoreFile>{scoreFile}");
                 sw.WriteLine($"hostName>{hostName}");
                 sw.WriteLine($"port>{port}");
-                //sw.WriteLine($"userName>{userName}");
+                sw.WriteLine($"userName>{userName}");
                 sw.WriteLine($"keyFile>{keyFile}");
             }
 
@@ -1713,6 +1742,7 @@ namespace websoku86v6
         public static void SendFile(string source, string destination, string hostName, int port, string userName,
             string keyFile)
         {
+            if (hostName == "") return;
 
             try
             {

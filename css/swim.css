@@ -24,26 +24,26 @@
 }
     
 body h1 {
-	font-size: 3.5vw !important;
+	font-size: 3.3vw !important;
 	font-size: 24px;
 }
 body h2 {
-	font-size: 3.4vw !important;
+	font-size: 2.4vw !important;
 	font-size: 22px;
 }
 body h3 {
-	font-size: 3.3vw !important;
+	font-size: 2.1vw !important;
 	font-size: 21px;
 }
 
 body h4 {
 
-	font-size: 3.2vw !important;
+	font-size: 1.5vw !important;
 	font-size: 20px;
 }
 
 body p {
-	font-size: 3.0vw !important;
+	font-size: 2.5vw !important;
 	font-size: 20px;
 }
 body table {
@@ -67,6 +67,15 @@ body table {
 	display:inline-block;text-align:right;
 	width:6.0em;
 	color:#0000e0;
+}
+
+.kumi {
+	font-size: 2.4vw !important;
+	font-size: 18px;
+}
+.ahtag {
+	font-size: 2.0vw !important;
+	font-size: 18px;
 }
 
 .footer {

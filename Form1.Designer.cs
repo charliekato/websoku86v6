@@ -298,7 +298,7 @@
             // 
             btnConfirmServer.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
             btnConfirmServer.Location = new Point(582, 125);
-            btnConfirmServer.Margin = new Padding(2, 2, 2, 2);
+            btnConfirmServer.Margin = new Padding(2);
             btnConfirmServer.Name = "btnConfirmServer";
             btnConfirmServer.Size = new Size(105, 43);
             btnConfirmServer.TabIndex = 13;
@@ -310,7 +310,7 @@
             // 
             btnKeyFile.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
             btnKeyFile.Location = new Point(662, 507);
-            btnKeyFile.Margin = new Padding(2, 2, 2, 2);
+            btnKeyFile.Margin = new Padding(2);
             btnKeyFile.Name = "btnKeyFile";
             btnKeyFile.Size = new Size(64, 40);
             btnKeyFile.TabIndex = 14;
@@ -395,7 +395,7 @@
             // 
             btnBrowse.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
             btnBrowse.Location = new Point(586, 248);
-            btnBrowse.Margin = new Padding(2, 2, 2, 2);
+            btnBrowse.Margin = new Padding(2);
             btnBrowse.Name = "btnBrowse";
             btnBrowse.Size = new Size(87, 42);
             btnBrowse.TabIndex = 13;
@@ -429,7 +429,7 @@
             chkBoxInitSend.AutoSize = true;
             chkBoxInitSend.Font = new Font("MS UI Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 128);
             chkBoxInitSend.Location = new Point(68, 531);
-            chkBoxInitSend.Margin = new Padding(2, 2, 2, 2);
+            chkBoxInitSend.Margin = new Padding(2);
             chkBoxInitSend.Name = "chkBoxInitSend";
             chkBoxInitSend.Size = new Size(262, 24);
             chkBoxInitSend.TabIndex = 39;
@@ -481,7 +481,7 @@
             // 
             pictureBox3.Image = Properties.Resources.image1;
             pictureBox3.Location = new Point(489, 159);
-            pictureBox3.Margin = new Padding(2, 2, 2, 2);
+            pictureBox3.Margin = new Padding(2);
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(20, 122);
             pictureBox3.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -531,7 +531,7 @@
             panel1.Controls.Add(lblHtmlPath);
             panel1.Controls.Add(lblServerName);
             panel1.Location = new Point(0, 2);
-            panel1.Margin = new Padding(2, 2, 2, 2);
+            panel1.Margin = new Padding(2);
             panel1.Name = "panel1";
             panel1.Size = new Size(825, 794);
             panel1.TabIndex = 49;
