@@ -508,6 +508,8 @@ namespace websoku86v6
 
                         writer.WriteLine("<div class=\"kumi\">" + kumi + "‘g</div>");
                         writer.WriteLine("<table border=\"0\" width=\"100%\">");
+                        writer.WriteLine("<tr><th width=\"4%\"></th><th width=\"30%\"></th><th width=\"40%\"></th>" +
+                                              "<th width=\"16%\"></th><th width=\"10%\"></th></tr>");
                     }
 
                     /* zero lane */
