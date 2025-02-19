@@ -1,3 +1,4 @@
+// {C0FCA290-5B99-4F78-924E-F47C8DB67752} <-- upgrade code do not change 
 //#define USBBOOT
 //using Microsoft.VisualBasic;
 using Renci.SshNet;
