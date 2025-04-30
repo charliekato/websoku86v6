@@ -1609,11 +1609,12 @@ namespace websoku86v6
         }
         public static int TimeStrToInt(string timeStr)
         {
-            if (timeStr == "") return CONSTANTS.TIME4DQ;
-            string workStr = timeStr.Replace(":", "");
-            workStr = workStr.Replace(".", "");
+            if (string.IsNullOrWhiteSpace(timeStr)) return CONSTANTS.TIME4DQ;
+
+            string workStr = timeStr.Replace(":", "").Replace(".", "");
             return Convert.ToInt32(workStr);
         }
+
 
 
         public static string TimeIntToStr(int mytime)
