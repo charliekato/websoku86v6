@@ -545,6 +545,7 @@
             Margin = new Padding(1, 3, 1, 3);
             Name = "Form1";
             Text = "(C)一般社団法人大津市水泳協会";
+            Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();

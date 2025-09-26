@@ -18,7 +18,7 @@ namespace websoku86v6
 #else
         readonly static string workDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
              "\\" + myName + "\\";
-        readonly static string iniFile =  workDir+myName + ".ini";
+        readonly static string iniFile = workDir + myName + ".ini";
 #endif
         string serverName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
@@ -165,6 +165,10 @@ namespace websoku86v6
             CreateRun(sender, e);
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.Text = this.Text + "    v1.0.6";
+        }
     }
     public class Result
     {
