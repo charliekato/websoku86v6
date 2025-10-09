@@ -6,6 +6,9 @@ using Renci.SshNet;
 using Microsoft.Data.SqlClient;
 using System.Net;
 using System.Data;
+using System.Security.Cryptography;
+using System.Runtime.ExceptionServices;
+using websoku86v6;
 
 namespace websoku86v6
 {
@@ -20,7 +23,7 @@ namespace websoku86v6
              "\\" + myName + "\\";
         readonly static string iniFile = workDir + myName + ".ini";
 #endif
-        string serverName = "daisy", eventNoStr = "", htmlPath = "",
+        public static string ServerName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
                 secKeyFile = "";
         string hostName = "", port = "22", userName = "";
@@ -31,10 +34,10 @@ namespace websoku86v6
             this.Height = 600;
 
 
-            Misc.ReadIniFile(iniFile, ref serverName, ref eventNoStr,
+            Misc.ReadIniFile(iniFile, ref ServerName, ref eventNoStr,
                 ref htmlPath, ref indexFile, ref prgResult, ref rankingFile,
                 ref scoreFile, ref hostName, ref port, ref userName, ref secKeyFile);
-            txtBoxServerName.Text = serverName;
+            txtBoxServerName.Text = ServerName;
             txtBoxEventNo.Text = eventNoStr.Trim();
             txtBoxIndexFile.Text = indexFile;
             txtBoxPrgResult.Text = prgResult;
@@ -186,9 +189,9 @@ namespace websoku86v6
 
     public static class Html
     {
-        static string thisYouTubeURL="";
-//        static string extraMessageURL = "https://result.swim.or.jp/tournament/list?member_group_code=25&official_group_code=25";
-//        static string extraMessage = "県内の過去のレースの結果はこちらです。";
+        static string thisYouTubeURL = "";
+        //        static string extraMessageURL = "https://result.swim.or.jp/tournament/list?member_group_code=25&official_group_code=25";
+        //        static string extraMessage = "県内の過去のレースの結果はこちらです。";
         public static void CreateHTML(
             //string mdbFile,    // Seiko Result System database.
             string serverName,
@@ -235,7 +238,7 @@ namespace websoku86v6
             if (rankingFile != string.Empty)
             {
                 string srcFile = workDir + "\\" + rankingFile;
-                CreateRankingFile(mdb2Html, srcFile, indexFile, kanproFile);
+                CreateRankingFile(eventNo,srcFile,indexFile, kanproFile);
                 if (keyFile != "")
                     Misc.SendFile(srcFile, rankingFilePath, hostName, port, userName, keyFile);
             }
@@ -264,6 +267,22 @@ namespace websoku86v6
         }
 
 
+        static void PrintShumoku(StreamWriter sw, int prgNo, string className, string gender, string distance, string style, string phase, string gameRecord)
+        {
+            sw.WriteLine("<hr id=\"PRGH" + prgNo + "\">");
+            sw.WriteLine("<table width=\"95%\">");
+            sw.WriteLine("  <tr>");
+            sw.WriteLine("    <td>  No. " + prgNo + "</td> <td>" + gender + "</td><td>" +
+                         className + "</td>" +
+                         "<td align=\"right\">" + distance + "</td>" +
+                         "<td align=\"left\">" + style + "</td>" +
+                         "<td align=\"right\">" + phase + "&nbsp;&nbsp;");
+
+            sw.WriteLine("大会記録:" + gameRecord);
+            sw.WriteLine("</td></tr></table>");
+            sw.WriteLine("<hr>");
+        }
+
 
         static void PrintShumoku(MDBInterface mdb, StreamWriter sw, int prgNo)
         {
@@ -279,187 +298,318 @@ namespace websoku86v6
 
             if (mdb.GameRecordAvailable)
             {
-                sw.WriteLine("大会記録:" + Misc.TimeIntToStr(mdb.GetGameRecord(prgNo)));
+                sw.WriteLine("大会記録:" + Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
             }
             sw.WriteLine("</td></tr></table>");
             sw.WriteLine("<hr>");
         }
 
-        static void CreateRankingFile(MDBInterface mdb, string srcFile, string indexFile, string prgFile)
+          //           touchBoard   lapCode  lapInterval
+          //長水路両側   1           2           50m毎
+          //長水路片側   2           4          100m
+          //短水路両側   3           1           25m
+          //短水路片側   4           2           50m    
+
+
+        static string GetLap(int ith, int lapCode)
         {
-            int uid;
-            int prgNo;
-            int position;
-            int numberOfLap;
-            string thisLap;
-            string prevLap;
-            string[] splitTime = new string[5];
-            int splitCounter;
-            int ithLap;
+            int intLap
+                = 25 * lapCode *ith;
 
-            using (StreamWriter sw = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis")))
+            if (intLap<100)
+                return   Convert.ToString(intLap) + "m";
+            if (intLap < 1000)
+                return   Convert.ToString(intLap) + "m";
+            return Convert.ToString(intLap) + "m";
+
+        }
+        static void CreateRankingFile(int eventNo, string srcFile, string indexFile, string prgFile)
+        {
+            const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
+            string connectionString = $" Server={MDBInterface.SERVERName}{magicWord}";
+
+            string myQuery = @"
+         SELECT プログラム.表示用競技番号 as PRGNO, ";
+            if (MDBInterface.ClassExist)
             {
-                PrintHTMLHead(mdb, sw, 2);
+                myQuery += @"
+				記録.新記録判定クラス as CLASSNO,
+				クラス.クラス名称,     
+                ";
+            }
+            myQuery += @"
+        case プログラム.性別コード 
+		  when 1 then '男子'
+		  when 2 then '女子'
+		  when 3 then '混成'
+		  when 4 then '混合'
+		end as 性別, 
+        距離.距離,
+		種目.種目,
+		予決.予決,		
+		 事由表示,
+		 棄権印刷マーク,
+		 rank() over (partition by 記録.競技番号";
+            if (MDBInterface.ClassExist)
+            {
+                myQuery += @"
+            , 記録.新記録判定クラス ";
+            }
 
-                for (prgNo = 1; prgNo <= mdb.MaxProgramNo; prgNo++)
+            myQuery += @"
+		      ORDER BY 記録.事由表示, 記録.ゴール ASC) as 順位,
+        選手.氏名 as 氏名, 
+        選手.所属名称1 as 所属 ,
+		        記録.ゴール, 
+        記録.新記録印刷マーク, 
+		[25m], [50m], [75m], [100m], [125m], [150m], [175m], [200m],
+	   [225m], [250m], [275m], [300m], [325m], [350m], [375m], [400m], 
+	   [425m], [450m], [475m], [500m], [525m], [550m], [575m], [600m],
+	   [625m], [650m], [675m], [700m], [725m], [750m], [775m], [800m],
+	   [825m], [850m], [875m], [900m], [925m], [950m], [975m], [1000m],
+	   [1025m],[1050m],[1075m],[1100m],[1125m],[1150m],[1175m],[1200m],
+	   [1225m],[1250m],[1275m],[1300m],[1325m],[1350m],[1375m],[1400m],
+	   [1425m],[1450m],[1475m],[1500m]
+
+       from 記録 
+        inner join 大会設定 on 大会設定.大会番号=記録.大会番号
+        INNER JOIN 選手 ON 選手.選手番号 = 記録.選手番号 
+             and 選手.大会番号=記録.大会番号
+        inner join プログラム on プログラム.競技番号=記録.競技番号 
+             and プログラム.大会番号=記録.大会番号
+        inner join 距離 on 距離.距離コード=プログラム.距離コード
+        inner join 種目 on 種目.種目コード=プログラム.種目コード
+        inner join ラップ on ラップ.大会番号=記録.大会番号　
+                     and ラップ.競技番号=記録.競技番号
+                     and ラップ.組=記録.組
+                     and ラップ.水路=記録.水路";
+            if (MDBInterface.ClassExist)
+            {
+
+                    myQuery += @"
+
+        inner join クラス on クラス.大会番号=記録.大会番号       
+                     and クラス.クラス番号=記録.新記録判定クラス  ";
+            }
+            myQuery += @"
+        inner join 予決 on 予決.予決コード = プログラム.予決コード
+     WHERE /*記録.事由表示 = 0 and*/  記録.大会番号=   @eventNo 
+        　　and プログラム.種目コード<6 
+              and 記録.ゴール <> '' 
+            
+       Union ALL 
+    SELECT 
+	      プログラム.表示用競技番号 as PRGNO,";
+
+            if (MDBInterface.ClassExist)
+            {
+
+                myQuery += @"
+		  	記録.新記録判定クラス as CLASSNO,
+	        クラス.クラス名称, ";
+            }
+            myQuery += @"
+        case プログラム.性別コード 
+		  when 1 then '男子'
+		  when 2 then '女子'
+		  when 3 then '混成'
+		  when 4 then '混合'
+		end as 性別, 
+        距離.距離 ,
+        種目.種目,
+		予決.予決,
+		事由表示,
+		棄権印刷マーク,
+		 rank() over (partition by 記録.競技番号, 記録.新記録判定クラス 
+		      ORDER BY 記録.事由表示, 記録.ゴール ASC) as 順位 , 
+		 
+	        concat (選手1.氏名, '<br>', 選手2.氏名,'<br>',  選手3.氏名,'<br>',  選手4.氏名 ) as 氏名,
+   リレーチーム.チーム名 as 所属,
+
+        記録.ゴール, 
+        記録.新記録印刷マーク,  
+		[25m], [50m], [75m], [100m], [125m], [150m], [175m], [200m],
+	   [225m], [250m], [275m], [300m], [325m], [350m], [375m], [400m], 
+	   [425m], [450m], [475m], [500m], [525m], [550m], [575m], [600m],
+	   [625m], [650m], [675m], [700m], [725m], [750m], [775m], [800m],
+	   [825m], [850m], [875m], [900m], [925m], [950m], [975m], [1000m],
+	   [1025m],[1050m],[1075m],[1100m],[1125m],[1150m],[1175m],[1200m],
+	   [1225m],[1250m],[1275m],[1300m],[1325m],[1350m],[1375m],[1400m],
+	   [1425m],[1450m],[1475m],[1500m]
+   from 記録 
+    inner join 大会設定 on 大会設定.大会番号=記録.大会番号
+    inner join リレーチーム on リレーチーム.チーム番号 = 記録.選手番号 and リレーチーム.大会番号 =記録.大会番号
+    INNER JOIN 選手 as 選手1 ON 選手1.選手番号 = 記録.第１泳者 and 選手1.大会番号=記録.大会番号
+    inner join 選手 as 選手2 on 選手2.選手番号 = 記録.第２泳者 and 選手2.大会番号=記録.大会番号
+    inner join 選手 as 選手3 on 選手3.選手番号 = 記録.第３泳者 and 選手3.大会番号=記録.大会番号
+    inner join 選手 as 選手4 on 選手4.選手番号 = 記録.第４泳者 and 選手4.大会番号=記録.大会番号
+    inner join プログラム on プログラム.競技番号=記録.競技番号 and プログラム.大会番号=  記録.大会番号
+		inner join 距離 on 距離.距離コード=プログラム.距離コード
+	inner join 種目 on 種目.種目コード=プログラム.種目コード
+	inner join ラップ on ラップ.大会番号=記録.大会番号　
+                 and ラップ.競技番号=記録.競技番号
+				 and ラップ.組=記録.組
+				 and ラップ.水路=記録.水路";
+            if (MDBInterface.ClassExist) {
+                myQuery += @"
+	inner join クラス on クラス.大会番号=記録.大会番号
+	             and クラス.クラス番号=記録.新記録判定クラス";
+            }
+                myQuery += @"
+
+	inner join 予決 on 予決.予決コード = プログラム.予決コード
+    WHERE /*記録.事由表示 = 0 and*/ 
+        記録.大会番号=   @eventNo 
+    　　and プログラム.種目コード>5 
+           and 記録.ゴール <> '' 
+        --and (プログラム.予決コード=6 or プログラム.予決コード=3) 
+		order by 表示用競技番号
+   
+            ";
+            bool first = true;
+            int classNo=0;
+            int prgNo=0;
+            int classNoSave = 0;
+            int prgNoSave = 0;
+            using (StreamWriter sw = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis"))) {
+
+                SqlConnection conn = new SqlConnection(connectionString);
+                SqlCommand comm = new SqlCommand(myQuery, conn);
+                comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
+                conn.Open();
+                using (var dr = comm.ExecuteReader())
                 {
-                    uid = mdb.GetUIDFromPrgNo(prgNo);
-                    if (uid > 0)
+                    bool inTable = false;
+                    while(dr.Read())
                     {
-                        numberOfLap = mdb.HowManyLapTimes(mdb.GetDistanceCodeFromPrgNo(prgNo));
 
-                        if (mdb.RaceExist(uid))
-                        {
-                            PrintShumoku(mdb, sw, prgNo);
+                        if (first) {
+                            first=false;
+                            PrintHTMLHead( sw,MDBInterface.GetEventName(), MDBInterface.GetEventDate(),MDBInterface.GetEventVenue(), 2);
+                        }
+                        if (MDBInterface.ClassExist)
+                        classNo = Convert.ToInt32(dr["CLASSNO"]);
+                        prgNo = Convert.ToInt32(dr["PRGNO"]);
+                        if ((classNo != classNoSave )||(prgNo !=prgNoSave)) {
+                            if (inTable)
+                                sw.WriteLine("</table>");
+
+                            prgNoSave = prgNo;
+                            classNoSave = classNo;
+                            //static void PrintShumoku(StreamWriter sw, int prgNo, string className, string gender, string distance, string style, string phase, string gameRecord)
+                            string className="";
+                            if (MDBInterface.ClassExist) className = (string)dr["クラス名称"];
+                            PrintShumoku(sw, prgNo, className, (string)dr["性別"],
+                                  (string)dr["距離"], (string)dr["種目"], (string)dr["予決"], 
+                                  Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
                             sw.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + prgFile + "#PRGH" + prgNo + "\">レーン順の結果</a>&nbsp;");
                             sw.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
                             sw.WriteLine("<br><br>");
                             sw.WriteLine("<table border=\"0\" width=\"100%\">");
-                            sw.WriteLine("<tr><th align=\"left\" width=\"8%\">順位</th>" +
-                                "<th align=\"left\" width=\"26%\">チーム名</th>" +
-                                "<th align=\"left\" width=\"37%\">氏名</th>" +
-                                "<th align=\"left\" width=\"17%\">タイム</th>" +
-                                "<th align=\"left\" width=\"12%\">新記録</th></tr>");
+                            inTable = true;
+                            sw.WriteLine(@"<tr><th align=""left"" width=""8%"">順位</th>
+                                <th align=""left"" width=""26%"">氏名</th>
+                                <th align=""left"" width=""37%"">所属</th>
+                                <th align=""left"" width=""17%"">タイム</th>
+                                <th align=""left"" width=""12%"">新記録</th></tr>");
+
+                        }
+                        if (Convert.ToInt32(dr["事由表示"])==0) {
+
+                            sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 10px\">" + Convert.ToInt32(dr["順位"]) + "</td>");
+                        }
+                        else {
+
+                            sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 10px\">  </td>");
                         }
 
-                        List<int> records = new List<int>();
-                        int numSwimmers = mdb.GetHowManySwimmers(uid);
 
-                        for (position = 1; position <= numSwimmers; position++) ////2024/6/18 bug fix using HowMany...
+                        sw.WriteLine("<td valign=\"top\">" + (string)dr["氏名"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">" + (string)dr["所属"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">");
+                        if (Convert.ToInt32(dr["事由表示"]) == 0)
                         {
-                            records.Clear();
-                            mdb.GetResultNo(ref records, uid, position);
-                            //if (records.Count == 0) break; //<--!!bug
-                            for (int rn = 0; rn < records.Count; rn++)
+                            sw.WriteLine((string)dr["ゴール"]+"</td><td> " + (string)dr["新記録印刷マーク"]+"</td></tr>");
+                        }
+                        else
+                        {
+                            sw.WriteLine((string)dr["棄権印刷マーク"]+"</td></tr>");
+                        }
+
+                        string distance = (string)dr["距離"];
+                        int numberOfLap = MDBInterface.HowManyLapTimes(distance);
+                        string prevLap;
+                        int splitCounter;
+                        int ithLap;
+                        string thisLap;
+                        string thisLapMeter;
+                        string[] splitTime = new string[5];
+
+                        if (numberOfLap > 1)               
+                        {                                  
+                            prevLap = "";                  
+                            splitCounter = 1;              
+                                                            
+
+                            for (ithLap = 1; ithLap <= numberOfLap; ithLap++)
                             {
-                                Result result = mdb.GetResult(records[rn]);
-                                if (result.swimmerID > 0)
+                               
+                                thisLapMeter = GetLap(ithLap, MDBInterface.lapCode);
+                                thisLap = (string) dr[thisLapMeter];
+                                if (ithLap % 4 == 1) // was 1 now is 0
                                 {
+                                    sw.WriteLine("<tr> <td colspan=4 align=\"center\"> <div class=\"lap_container\">");
+                                }
 
-                                    if (Misc.IsDQorDNS(result.reasonCode))
-                                    {
-                                        sw.WriteLine("<tr><td valign=\"top\">    </td>");
-                                    }
-                                    else if (result.laneNo >= 50)
-                                    {
-                                        sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 2px\">補欠" +
-                                            (result.laneNo - 49) + "</td>");
-                                    }
-                                    else
-                                    {
-                                        sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 10px\">" + position + "</td>");
-                                    }
+                                sw.WriteLine("<div class=\"lap_time\">" + thisLap + "</div>");
 
-                                    if (Misc.IsRelay(mdb.GetStyleFromPrgNo(prgNo)))
+                                if (ithLap == 1) // was 1 now is 0
+                                {
+                                    splitTime[splitCounter] = "";
+                                }
+                                else
+                                {
+                                    if (thisLap != "")
                                     {
-                                        sw.WriteLine("<td valign=\"top\">" + mdb.GetRelayTeamName(result.swimmerID) + "</td>");
-                                        sw.WriteLine("<td valign=\"top\">" + HtmlName4Relay(mdb, result.rswimmer) + "</td>");
+                                        if (prevLap != "")
+                                            splitTime[splitCounter] = "(" + Misc.TimeSubtract(thisLap, prevLap) + ")";
+                                        else
+                                            splitTime[splitCounter] = "";
                                     }
                                     else
                                     {
-                                        sw.WriteLine("<td>" + mdb.GetSwimmerName(result.swimmerID) + "</td>");
-                                        sw.WriteLine("<td valign=\"top\">" + mdb.GetTeamName(result.swimmerID) + "</td>");
+                                        splitTime[splitCounter] = "";
                                     }
 
-                                    sw.WriteLine("<td valign=\"top\">");
+                                }
 
-                                    if (result.reasonCode > 0)
-                                    {
-                                        sw.WriteLine(CONSTANTS.reason[result.reasonCode] + "</td></tr>");
-                                    }
+                                splitCounter++;
 
-                                    string timeStr = Misc.TimeIntToStr(result.goalTime);
-                                    if (timeStr != "")
-                                    {
-                                        sw.WriteLine(timeStr);
-                                        sw.WriteLine("</td>");
+                                prevLap = thisLap;
 
-                                        if (mdb.GameRecordAvailable)
-                                        {
-                                            if (mdb.GetGameRecord(prgNo) > result.goalTime)
-                                            {
-                                                sw.WriteLine("<td valign=\"top\">大会新</td>");
-                                            }
-                                        }
-
-                                        sw.WriteLine("</tr>");
-
-                                        if (numberOfLap > 1)
-                                        {
-                                            prevLap = "";
-                                            splitCounter = 1;
-
-
-                                            for (ithLap = 1; ithLap <= numberOfLap; ithLap++)
-                                            {
-                                                thisLap = result.lapTime[ithLap * mdb.lapCode - 1];
-                                                if (ithLap % 4 == 1) // was 1 now is 0
-                                                {
-                                                    sw.WriteLine("<tr> <td colspan=4 align=\"center\"> <div class=\"lap_container\">");
-                                                }
-
-                                                sw.WriteLine("<div class=\"lap_time\">" + thisLap + "</div>");
-
-                                                if (ithLap == 1) // was 1 now is 0
-                                                {
-                                                    splitTime[splitCounter] = "";
-                                                }
-                                                else
-                                                {
-                                                    if (thisLap != "")
-                                                    {
-                                                        if (prevLap != "")
-                                                            splitTime[splitCounter] = "(" + Misc.TimeSubtract(thisLap, prevLap) + ")";
-                                                        else
-                                                            splitTime[splitCounter] = "";
-                                                    }
-                                                    else
-                                                    {
-                                                        splitTime[splitCounter] = "";
-                                                    }
-
-                                                }
-
-                                                splitCounter++;
-
-                                                prevLap = thisLap;
-
-                                                if (ithLap % 4 == 0) // was 0 is 3
-                                                {
-                                                    sw.WriteLine("</div></td></tr>");
-                                                    splitCounter = 1;
-                                                    Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], splitTime[3], splitTime[4]);
-                                                }
-                                            }
-
-                                            if (ithLap % 4 == 3) //was 3 is 2
-                                            {
-                                                sw.WriteLine("<div class=\"lap_time\">  </div><div class=\"lap_time\"> </div></td></tr>");
-                                                Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], "", "");
-                                            }
-                                        }
-                                    }
+                                if (ithLap % 4 == 0) // was 0 is 3
+                                {
+                                    sw.WriteLine("</div></td></tr>");
+                                    splitCounter = 1;
+                                    Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], splitTime[3], splitTime[4]);
                                 }
                             }
-                        }
-                        sw.WriteLine("</table><br><br>");
-                    }
-                }
 
-                PrintTailAndClose(sw);
+                            if (ithLap % 4 == 3) //was 3 is 2
+                            {
+                                sw.WriteLine("<div class=\"lap_time\">  </div><div class=\"lap_time\"> </div></td></tr>");
+                                Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], "", "");
+                            }
+                        }
+                    }
+                    sw.WriteLine("</table>");
+                }
             }
         }
-/*
-        static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer)
-        {
-            return mdb.GetSwimmerName(rswimmer[0]) + "<br>"
-                + mdb.GetSwimmerName(rswimmer[1]) + "<br>"
-                + mdb.GetSwimmerName(rswimmer[2]) + "<br>"
-                + mdb.GetSwimmerName(rswimmer[3]);
 
-        }
-*/
-        static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
+
+
+static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         {
                            return mdb.GetSwimmerName(rswimmer[0]) + "&nbsp;&nbsp; " +
                                              mdb.GetSwimmerName(rswimmer[1]) + "<br>" +
@@ -475,7 +625,7 @@ namespace websoku86v6
 
             using (StreamWriter writer = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis")))
             {
-                PrintHTMLHead(mdb, writer, 2);
+                PrintHTMLHead2(mdb, writer, 2);
 
                 for (int prgNo = 1; prgNo <= maxProgramNo; prgNo++)
                 {
@@ -578,7 +728,8 @@ namespace websoku86v6
 
             writer.WriteLine("</table>");
         }
-        static void PrintHTMLHead(MDBInterface mdb, StreamWriter writer, int fType)
+
+        static void PrintHTMLHead( StreamWriter writer, string eventName, string eventDate, string eventVenue, int fType)
         {
             writer.WriteLine("<?php");
             writer.WriteLine(" header(\"Content-Type: text/html; charset=Shift-JIS\");");
@@ -597,7 +748,7 @@ namespace websoku86v6
             writer.WriteLine(" }");
             writer.WriteLine("?>");
             writer.WriteLine("<head> ");
-            writer.WriteLine($"<meta charset=\"Shift_JIS\"><title>{mdb.GetEventName()} </title>");
+            writer.WriteLine($"<meta charset=\"Shift_JIS\"><title>{eventName} </title>");
             if (fType == 1)
             {
                 writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/cman.css\">");
@@ -615,7 +766,54 @@ namespace websoku86v6
             writer.WriteLine("<body>");
             if (fType < 3)
             {
-                writer.WriteLine($"<h3>{mdb.GetEventName()} &nbsp;&nbsp;開催地 : {mdb.GetEventVenue()} &nbsp;&nbsp;期日 : {mdb.GetEventDate()}</h3>");
+                writer.WriteLine($"<h3>{eventName} &nbsp;&nbsp;開催地 : {eventVenue} &nbsp;&nbsp;期日 : {eventDate}</h3>");
+            }
+            if (thisYouTubeURL != "")
+            {
+                writer.WriteLine($"<h3><a href=\"{thisYouTubeURL} \">YouTube ライブ配信はこちら</a></h3>");
+            }
+//            writer.WriteLine($"<h3><a href=\" {extraMessageURL} \">" + extraMessage + "</a></h3>");
+
+        }
+
+        static void PrintHTMLHead2(MDBInterface mdb, StreamWriter writer, int fType)
+        {
+            writer.WriteLine("<?php");
+            writer.WriteLine(" header(\"Content-Type: text/html; charset=Shift-JIS\");");
+            writer.WriteLine("?>");
+            writer.WriteLine("<!DOCTYPE Html><Html>");
+            writer.WriteLine("<?php");
+            writer.WriteLine(" $qarray = explode(\"&\", $_SERVER['QUERY_STRING']);");
+            writer.WriteLine(" list($vname1,$value1) = explode(\"=\",$qarray[0]);");
+            writer.WriteLine(" list($vname2,$value2) = explode(\"=\",$qarray[1]);");
+            writer.WriteLine(" if (strcmp($vname1,\"prgNo\")==0) {");
+            writer.WriteLine("     $prgNo=$value1;");
+            writer.WriteLine("     $kumiNo=$value2;");
+            writer.WriteLine(" } else {");
+            writer.WriteLine("     $kumiNo=$value1;");
+            writer.WriteLine("     $prgNo=$value2;");
+            writer.WriteLine(" }");
+            writer.WriteLine("?>");
+            writer.WriteLine("<head> ");
+            writer.WriteLine($"<meta charset=\"Shift_JIS\"><title>{MDBInterface.GetEventName()} </title>");
+            if (fType == 1)
+            {
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/cman.css\">");
+                writer.WriteLine("<script type=\"text/javascript\" src=\"cman.js\"></script>");
+            }
+            if (fType == 2)
+            {
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swim.css\">");
+            }
+            if (fType == 3)
+            {
+                writer.WriteLine("<link rel=\"stylesheet\" media=\"all\" href=\"css/swimcall.css\">");
+            }
+            writer.WriteLine("</head>");
+            writer.WriteLine("<body>");
+            if (fType < 3)
+            {
+                writer.WriteLine($"<h3>{MDBInterface.GetEventName()} &nbsp;&nbsp;開催地 : {MDBInterface.GetEventVenue()} &nbsp;&nbsp;期日 : {MDBInterface.GetEventDate()}</h3>");
             }
             if (thisYouTubeURL != "")
             {
@@ -632,7 +830,7 @@ namespace websoku86v6
 
             using (StreamWriter writer = new StreamWriter(myName, false, System.Text.Encoding.GetEncoding("shift_jis")))
             {
-                PrintHTMLHead(mdb, writer, 1);
+                PrintHTMLHead2(mdb, writer, 1);
                 writer.WriteLine("<table id=\"sampleTable\" border=\"0\" width=\"95%\">");
                 writer.WriteLine("<tr><th cmanFilterBtn>競技番号</th><th cmanFilterBtn>クラス</th>" +
                                  "<th cmanFilterBtn>性別</th><th cmanFilterBtn>距離</th>" +
@@ -689,7 +887,7 @@ namespace websoku86v6
             }
         }
         private readonly int eventNo;
-        private readonly string serverName;
+        public static string SERVERName;
 
         private readonly string[] ShumokuTable = new string[8];
         public string GetShumoku(int id) { return ShumokuTable[id]; }
@@ -748,7 +946,7 @@ namespace websoku86v6
         }
         int touchBoard; // 1--50m  2--100m  3--25m   4--50m 
         public bool zeroUse { get; set; }
-        public int lapCode { get; set; }
+        public static int lapCode { get; set; }
 
         private int[] UIDFromPrgNo;
         int[] ClassNoByPrgNo;
@@ -756,8 +954,8 @@ namespace websoku86v6
         int[] styleByPrgNo;
         int[] distanceByPrgNo;
         string[] phaseByPrgNo; // 予選/決勝/タイム決勝
-        int[] gameRecord4PrgNo;
-        public int GetGameRecord(int prgNo) { return gameRecord4PrgNo[prgNo]; }
+        static int[] gameRecord4PrgNo;
+        static public int GetGameRecord(int prgNo) { return gameRecord4PrgNo[prgNo]; }
         int[] numSwimmers4UID;
         public int GetHowManySwimmers(int uid) { return numSwimmers4UID[uid]; }
         public int GetUIDFromPrgNo(int prgNo) { return UIDFromPrgNo[prgNo]; }
@@ -775,10 +973,11 @@ namespace websoku86v6
         {
             return TeamName4Relay[id];
         }
+#nullable enable
         public MDBInterface(string serverName, int eventNo)
         {
             this.eventNo = eventNo;
-            this.serverName = serverName;
+            SERVERName = serverName;
             InitTables();
             resultList = new List<Result>();
             InitProgramDB(ref maxProgramNo, ref maxUID);
@@ -791,40 +990,52 @@ namespace websoku86v6
             ReadMDB();
         }
 
-        public int HowManyLapTimes(int distanceCode)
+        public static int HowManyLapTimes(string distance)
         {
-            switch (distanceCode)
-            {
-                case 1: // 25m
-                    //if (lapCode == 1) return 1;
-                    return 0;
-                case 2: // 50m
-                    if (lapCode == 4) return 0;
-                    if (lapCode == 1) return 2;
-                    return 1;
-                case 3: // 100m
-                    if (lapCode == 4) return 1;
-                    if (lapCode == 1) return 4;
-                    return 2;
-                case 4: // 200m
-                    if (lapCode == 4) return 2;
-                    if (lapCode == 1) return 8;
-                    return 4;
-                case 5: // 400m
-                    if (lapCode == 4) return 4;
-                    if (lapCode == 1) return 16;
-                    return 8;
-                case 6: // 800m
-                    if (lapCode == 4) return 8;
-                    if (lapCode == 1) return 32;
-                    return 16;
-                case 7: // 1500m
-                    if (lapCode == 4) return 15;
-                    if (lapCode == 1) return 60;
-                    return 30;
-                default:
-                    return 0; // Default to 0 if distance is not recognized
+            if ( distance =="  25m")
+                //if (lapCode == 1) return 1;
+                return 0;
+            if ( distance =="  50m") { 
+                if (lapCode == 4) return 0;
+                if (lapCode == 1) return 2;
+                return 1;
             }
+            if (distance== " 100m")
+            {
+
+                if (lapCode == 4) return 1;
+                if (lapCode == 1) return 4;
+                return 2;
+            }
+            if (distance==" 200m")
+            {
+
+                if (lapCode == 4) return 2;
+                if (lapCode == 1) return 8;
+                return 4;
+            }
+            if (distance==" 400m")
+            {
+
+                if (lapCode == 4) return 4;
+                if (lapCode == 1) return 16;
+                return 8;
+            }
+            if (distance==" 800m")
+            {
+
+                if (lapCode == 4) return 8;
+                if (lapCode == 1) return 32;
+                return 16;
+            }
+            if (distance=="1500m")
+            {
+
+                if (lapCode == 4) return 15;
+                if (lapCode == 1) return 60;
+                return 30;
+            }
+                return 0; // Default to 0 if distance is not recognized
         }
 
 
@@ -854,7 +1065,7 @@ namespace websoku86v6
         void InitLapInterval()
         {
 
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT タッチ板 FROM 大会設定 where 大会番号=" + eventNo + ";";
@@ -900,7 +1111,7 @@ namespace websoku86v6
             ShumokuTable[6] = "リレー";
             ShumokuTable[7] = "メドレーリレー";
             */
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT 種目, 種目コード FROM 種目 ;";
@@ -925,7 +1136,7 @@ namespace websoku86v6
         }
         void InitYoketsuTable()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT 予決コード, 予決 FROM 予決;";
@@ -949,7 +1160,7 @@ namespace websoku86v6
                 }
             }
         }
-
+        public static bool ClassExist=false;
         void InitDistanceTable()
         {
             /*
@@ -963,7 +1174,7 @@ namespace websoku86v6
             DistanceTable[7] = "1500m";
             */
 
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT 距離コード, 距離 FROM 距離;";
@@ -1015,9 +1226,8 @@ namespace websoku86v6
         string[] className;
         void InitClassDB()
         {
-
             int numClasses = 0;
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT MAX(クラス番号) as maxClass FROM dbo.クラス where 大会番号=" + eventNo + ";";
@@ -1030,6 +1240,7 @@ namespace websoku86v6
                     {
                         dr.Read();
                         numClasses = Misc.Obj2Int(dr["maxClass"]);
+                        
                     }
                 }
                 catch (Exception ex)
@@ -1038,12 +1249,16 @@ namespace websoku86v6
                 }
             }
             className = new string[numClasses + 1];
+            if (numClasses > 0)
+            {
+                ClassExist = true;
+            }
         }
 
 
         void ReadRecordDB()
         {
-            using (SqlConnection connection = new SqlConnection(magicHead + serverName + magicWord))
+            using (SqlConnection connection = new SqlConnection(magicHead + SERVERName + magicWord))
             {
                 try
                 {
@@ -1097,14 +1312,15 @@ namespace websoku86v6
 
         void ReadClassDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
-                string myQuery = "SELECT クラス番号,クラス名称 FROM クラス where 大会番号 = " + eventNo + ";";
+                string myQuery = "SELECT クラス番号,クラス名称 FROM クラス where 大会番号 =  @eventNo ;";
 
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 try
                 {
+                    comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
                     conn.Open();
                     using (var dr = comm.ExecuteReader())
                     {
@@ -1123,7 +1339,7 @@ namespace websoku86v6
 
         void InitProgramDB(ref int maxProgramNo, ref int maxUID)
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT MAX(表示用競技番号) AS MAXPRGNO, MAX(競技番号) AS MAXUID FROM プログラム WHERE 大会番号=" + eventNo + ";";
@@ -1162,7 +1378,7 @@ namespace websoku86v6
             int uid;
             int prgNo;
 
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT  競技番号, 表示用競技番号, 種目コード, 距離コード, " +
@@ -1192,15 +1408,15 @@ namespace websoku86v6
                 }
             }
         }
-        private string eventName;
-        private string eventDate;
-        private string eventVenue;
-        public string GetEventName() { return eventName; }
-        public string GetEventDate() { return eventDate; }
-        public string GetEventVenue() { return eventVenue; }
+        static string eventName;
+        static string eventDate;
+        static string eventVenue;
+        public static string GetEventName() { return eventName; }
+        public static string GetEventDate() { return eventDate; }
+        public static string GetEventVenue() { return eventVenue; }
         void ReadEventDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT 大会名１,開催地,始期間,終期間, ゼロコース使用 FROM 大会設定 where 大会番号=" + eventNo + ";";
@@ -1232,7 +1448,7 @@ namespace websoku86v6
         int GetNumRelayTeams()
         {
             int numRelayTeams = 0;
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT MAX(チーム番号) AS MAXRTEAMNUM FROM リレーチーム;";
@@ -1253,7 +1469,7 @@ namespace websoku86v6
         }
         void ReadTeamDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT チーム番号,チーム名 FROM リレーチーム where 大会番号=" + eventNo + ";";
@@ -1275,7 +1491,7 @@ namespace websoku86v6
         int GetNumSwimmers()
         {
             int numSwimmers = 0;
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT MAX(選手番号) AS MAXSNUM FROM 選手 where 大会番号=" + eventNo + ";";
@@ -1316,7 +1532,7 @@ namespace websoku86v6
         }
         int InitClubName()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 string myQuery = "SELECT DISTINCT 所属名称１ AS CLUBNAME FROM 選手 where 大会番号=" + eventNo + ";";
@@ -1340,7 +1556,7 @@ namespace websoku86v6
         }
         void ReadSwimmerDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 int clubNo;
@@ -1387,7 +1603,7 @@ namespace websoku86v6
                                 "lap1025", "lap1050", "lap1075", "lap1100", "lap1125", "lap1150", "lap1175", "lap1200",
                                 "lap1225", "lap1250", "lap1275", "lap1300", "lap1325", "lap1350", "lap1375", "lap1400",
                                 "lap1425", "lap1450", "lap1475", "lap1500" };
-            SqlConnection conn = new SqlConnection(magicHead + serverName + magicWord);
+            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
             using (conn)
             {
                 Result result;
@@ -1683,7 +1899,7 @@ namespace websoku86v6
                         if (line == "") continue;
                         if (line.Substring(0, 1) == "#") continue;
                         string[] words = line.Split('>');
-                        if (words[0] == "serverName") serverName = words[1];
+                        if (words[0] == "ServerName") serverName = words[1];
                         if (words[0] == "eventNo") eventNoStr = words[1];
                         if (words[0] == "htmlFilePath") htmlFilePath = words[1];
                         if (words[0] == "indexFile") indexFile = words[1];
@@ -1722,7 +1938,7 @@ namespace websoku86v6
 
             using (StreamWriter sw = new StreamWriter(filename, false, System.Text.Encoding.GetEncoding("shift_jis")))
             {
-                sw.WriteLine($"serverName>{serverName}");
+                sw.WriteLine($"ServerName>{serverName}");
                 sw.WriteLine($"eventNo>{eventNo}");
                 sw.WriteLine($"htmlFilePath>{htmlFilePath}");
                 sw.WriteLine($"indexFile>{indexFile}");
