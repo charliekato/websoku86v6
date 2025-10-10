@@ -170,7 +170,7 @@ namespace websoku86v6
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Text = this.Text + "    v1.0.6";
+            this.Text = this.Text + "    v1.1";
         }
     }
     public class Result
