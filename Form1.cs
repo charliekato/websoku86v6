@@ -393,9 +393,8 @@ namespace websoku86v6
             }
             myQuery += @"
         inner join 予決 on 予決.予決コード = プログラム.予決コード
-     WHERE /*記録.事由表示 = 0 and*/  記録.大会番号=   @eventNo 
+     WHERE   記録.大会番号=   @eventNo 
         　　and プログラム.種目コード<6 
-              and 記録.ゴール <> '' 
             
        Union ALL 
     SELECT 
@@ -461,8 +460,6 @@ namespace websoku86v6
     WHERE /*記録.事由表示 = 0 and*/ 
         記録.大会番号=   @eventNo 
     　　and プログラム.種目コード>5 
-           and 記録.ゴール <> '' 
-        --and (プログラム.予決コード=6 or プログラム.予決コード=3) 
 		order by 表示用競技番号
    
             ";
