@@ -6,6 +6,7 @@ using Renci.SshNet;
 using Microsoft.Data.SqlClient;
 using System.Net;
 using System.Data;
+using System.Xml.Linq;
 using System.Security.Cryptography;
 using System.Runtime.ExceptionServices;
 using websoku86v6;
@@ -17,11 +18,11 @@ namespace websoku86v6
         readonly static string myName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 #if USBBOOT
         readonly static string workDir = "..\\html\\";
-        readonly static string iniFile =  myName + ".ini";
+        readonly static string iniFile =  myName + ".config";
 #else
         readonly static string workDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
              "\\" + myName + "\\";
-        readonly static string iniFile = workDir + myName + ".ini";
+        readonly static string iniFile = workDir + myName + ".config";
 #endif
         public static string ServerName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
@@ -34,7 +35,7 @@ namespace websoku86v6
             this.Height = 600;
 
 
-            Misc.ReadIniFile(iniFile, ref ServerName, ref eventNoStr,
+            Misc.ReadConfigFile(iniFile, ref ServerName, ref eventNoStr,
                 ref htmlPath, ref indexFile, ref prgResult, ref rankingFile,
                 ref scoreFile, ref hostName, ref port, ref userName, ref secKeyFile);
             txtBoxServerName.Text = ServerName;
@@ -79,7 +80,7 @@ namespace websoku86v6
         private void CreateRun(object sender, EventArgs ev)
         {
             Cursor.Current = Cursors.WaitCursor;
-            Misc.WriteIniFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
+            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
                 txtBoxHtmlPath.Text, txtBoxIndexFile.Text, txtBoxPrgResult.Text, txtBoxRanking.Text,
                 txtBoxScoreFile.Text, txtBoxHostName.Text, txtBoxPort.Text,
                 txtBoxUserName.Text, txtBoxKeyFile.Text);
@@ -128,7 +129,7 @@ namespace websoku86v6
         }
         private void btnQuit_Click(object sender, EventArgs e)
         {
-            Misc.WriteIniFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
+            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
                 txtBoxHtmlPath.Text, txtBoxIndexFile.Text, txtBoxPrgResult.Text, txtBoxRanking.Text,
                 txtBoxScoreFile.Text, txtBoxHostName.Text, txtBoxPort.Text,
                 txtBoxUserName.Text, txtBoxKeyFile.Text);
@@ -1874,6 +1875,35 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 return value.Substring(value.Length - length);
             }
         }
+
+        public static void ReadConfigFile(string filename,
+            ref string serverName,
+            ref string eventNoStr,
+            ref string htmlFilePath,
+            ref string indexFile,
+            ref string kanproFile,
+            ref string rankingFile,
+            ref string scoreFile,
+            ref string hostName,
+            ref string port,
+            ref string userName,
+            ref string keyFile)
+        {
+            XDocument xml = XDocument.Load(filename);
+            serverName = xml.Root.Element("serverName").Value;
+            eventNoStr = xml.Root.Element("eventNo").Value;
+            htmlFilePath = xml.Root.Element("htmlFilePath").Value;
+            indexFile = xml.Root.Element("indexFile").Value;
+            kanproFile = xml.Root.Element("kanproFile").Value;
+            rankingFile = xml.Root.Element("rankingFile").Value;
+            scoreFile = xml.Root.Element("scoreFile").Value;
+            hostName = xml.Root.Element("hostName").Value;
+            port = xml.Root.Element("port").Value;
+            userName = xml.Root.Element("userName").Value;
+            keyFile = xml.Root.Element("keyFile").Value;
+        }
+
+
         public static void ReadIniFile(string filename,
             ref string serverName,
             ref string eventNoStr,
@@ -1916,6 +1946,37 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
 
+
+        public static void WriteConfigFile(
+            string filename,     // CreateWebReport.ini
+                                          string serverName,  // C:Users\ykato\OneDrive\SwimDB\DB2024\Swim32.mdb 
+                                          string eventNo,
+                                          string htmlFilePath, // usually rFlash/xxxx
+                                          string indexFile,    // xxxx.html
+                                          string kanproFile,   // xxxxp.html
+                                          string rankingFile,  // xxxxr.html
+                                          string scoreFile,
+                                          string hostName,
+                                          string port,
+                                          string userName,
+                                          string keyFile)
+        {
+
+            XDocument xml = XDocument.Load(filename);
+            xml.Root.Element("serverName").Value = serverName;
+            xml.Root.Element("eventNo").Value = eventNo;
+            xml.Root.Element("htmlFilePath").Value = htmlFilePath;
+            xml.Root.Element("indexFile").Value = indexFile;
+            xml.Root.Element("kanproFile").Value = kanproFile;
+            xml.Root.Element("rankingFile").Value = rankingFile;
+            xml.Root.Element("scoreFile").Value = scoreFile;
+            xml.Root.Element("hostName").Value = hostName;
+            xml.Root.Element("port").Value = port;
+            xml.Root.Element("userName").Value = userName;
+            xml.Root.Element("keyFile").Value = keyFile;
+            xml.Save(filename)  ;
+
+        }
 
 
         public static void WriteIniFile(string filename,     // CreateWebReport.ini

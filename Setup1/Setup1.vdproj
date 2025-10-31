@@ -39,6 +39,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_797642048C1043068C277759C90B6247"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_84AE1A8D17694ED4AE4EAADE25595024"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -46,12 +52,6 @@
         "Entry"
         {
         "MsmKey" = "8:_9CA26C5F67264DB7BF372B52A14CAF2C"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_F3F7137FCEA34F05A684EB9D54EB1448"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -212,6 +212,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_797642048C1043068C277759C90B6247"
+            {
+            "SourcePath" = "8:..\\websoku86v6.config"
+            "TargetName" = "8:websoku86v6.config"
+            "Tag" = "8:"
+            "Folder" = "8:_8097D8B6C436441ABEDDB07D02A7196D"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_84AE1A8D17694ED4AE4EAADE25595024"
             {
             "SourcePath" = "8:..\\cman.js"
@@ -238,26 +258,6 @@
             "TargetName" = "8:websoku86v6.ico"
             "Tag" = "8:"
             "Folder" = "8:_AC8943EA2F5C4106AE136C87E0726DEA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F3F7137FCEA34F05A684EB9D54EB1448"
-            {
-            "SourcePath" = "8:..\\websoku86v6.ini"
-            "TargetName" = "8:websoku86v6.ini"
-            "Tag" = "8:"
-            "Folder" = "8:_8097D8B6C436441ABEDDB07D02A7196D"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"

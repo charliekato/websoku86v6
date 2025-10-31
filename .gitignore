@@ -4,3 +4,4 @@ obj
 pp.cs
 MDBInterface.cs
 UpgradeLog.htm
+*.config
