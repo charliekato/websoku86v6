@@ -9,6 +9,8 @@
     <ApplicationIcon>websoku86v6.ico</ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
     <NoWarn>CS8618</NoWarn>
+    <NoWarn>CS8616</NoWarn>
+    <NoWarn>CS8602</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
