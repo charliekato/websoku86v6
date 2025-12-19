@@ -329,141 +329,8 @@ namespace websoku86v6
             const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
             string connectionString = $" Server={MDBInterface.SERVERName}{magicWord}";
 
-            string myQuery = @"
-         SELECT プログラム.表示用競技番号 as PRGNO, ";
-            if (MDBInterface.ClassExist)
-            {
-                myQuery += @"
-				記録.新記録判定クラス as CLASSNO,
-				クラス.クラス名称,     
-                ";
-            }
-            myQuery += @"
-        case プログラム.性別コード 
-		  when 1 then '男子'
-		  when 2 then '女子'
-		  when 3 then '混成'
-		  when 4 then '混合'
-		end as 性別, 
-        距離.距離,
-		種目.種目,
-		予決.予決,		
-		 事由表示,
-		 棄権印刷マーク,
-		 rank() over (partition by 記録.競技番号";
-            if (MDBInterface.ClassExist)
-            {
-                myQuery += @"
-            , 記録.新記録判定クラス ";
-            }
-
-            myQuery += @"
-		      ORDER BY 記録.事由表示, 記録.ゴール ASC) as 順位,
-        選手.氏名 as 氏名, 
-        選手.所属名称1 as 所属 ,
-		        記録.ゴール, 
-        記録.新記録印刷マーク, 
-		[25m], [50m], [75m], [100m], [125m], [150m], [175m], [200m],
-	   [225m], [250m], [275m], [300m], [325m], [350m], [375m], [400m], 
-	   [425m], [450m], [475m], [500m], [525m], [550m], [575m], [600m],
-	   [625m], [650m], [675m], [700m], [725m], [750m], [775m], [800m],
-	   [825m], [850m], [875m], [900m], [925m], [950m], [975m], [1000m],
-	   [1025m],[1050m],[1075m],[1100m],[1125m],[1150m],[1175m],[1200m],
-	   [1225m],[1250m],[1275m],[1300m],[1325m],[1350m],[1375m],[1400m],
-	   [1425m],[1450m],[1475m],[1500m]
-
-       from 記録 
-        inner join 大会設定 on 大会設定.大会番号=記録.大会番号
-        INNER JOIN 選手 ON 選手.選手番号 = 記録.選手番号 
-             and 選手.大会番号=記録.大会番号
-        inner join プログラム on プログラム.競技番号=記録.競技番号 
-             and プログラム.大会番号=記録.大会番号
-        inner join 距離 on 距離.距離コード=プログラム.距離コード
-        inner join 種目 on 種目.種目コード=プログラム.種目コード
-        inner join ラップ on ラップ.大会番号=記録.大会番号　
-                     and ラップ.競技番号=記録.競技番号
-                     and ラップ.組=記録.組
-                     and ラップ.水路=記録.水路";
-            if (MDBInterface.ClassExist)
-            {
-
-                    myQuery += @"
-
-        inner join クラス on クラス.大会番号=記録.大会番号       
-                     and クラス.クラス番号=記録.新記録判定クラス  ";
-            }
-            myQuery += @"
-        inner join 予決 on 予決.予決コード = プログラム.予決コード
-     WHERE   記録.大会番号=   @eventNo 
-        　　and プログラム.種目コード<6 
-            
-       Union ALL 
-    SELECT 
-	      プログラム.表示用競技番号 as PRGNO,";
-
-            if (MDBInterface.ClassExist)
-            {
-
-                myQuery += @"
-		  	記録.新記録判定クラス as CLASSNO,
-	        クラス.クラス名称, ";
-            }
-            myQuery += @"
-        case プログラム.性別コード 
-		  when 1 then '男子'
-		  when 2 then '女子'
-		  when 3 then '混成'
-		  when 4 then '混合'
-		end as 性別, 
-        距離.距離 ,
-        種目.種目,
-		予決.予決,
-		事由表示,
-		棄権印刷マーク,
-		 rank() over (partition by 記録.競技番号, 記録.新記録判定クラス 
-		      ORDER BY 記録.事由表示, 記録.ゴール ASC) as 順位 , 
-		 
-	        concat (選手1.氏名, '<br>', 選手2.氏名,'<br>',  選手3.氏名,'<br>',  選手4.氏名 ) as 氏名,
-   リレーチーム.チーム名 as 所属,
-
-        記録.ゴール, 
-        記録.新記録印刷マーク,  
-		[25m], [50m], [75m], [100m], [125m], [150m], [175m], [200m],
-	   [225m], [250m], [275m], [300m], [325m], [350m], [375m], [400m], 
-	   [425m], [450m], [475m], [500m], [525m], [550m], [575m], [600m],
-	   [625m], [650m], [675m], [700m], [725m], [750m], [775m], [800m],
-	   [825m], [850m], [875m], [900m], [925m], [950m], [975m], [1000m],
-	   [1025m],[1050m],[1075m],[1100m],[1125m],[1150m],[1175m],[1200m],
-	   [1225m],[1250m],[1275m],[1300m],[1325m],[1350m],[1375m],[1400m],
-	   [1425m],[1450m],[1475m],[1500m]
-   from 記録 
-    inner join 大会設定 on 大会設定.大会番号=記録.大会番号
-    inner join リレーチーム on リレーチーム.チーム番号 = 記録.選手番号 and リレーチーム.大会番号 =記録.大会番号
-    INNER JOIN 選手 as 選手1 ON 選手1.選手番号 = 記録.第１泳者 and 選手1.大会番号=記録.大会番号
-    inner join 選手 as 選手2 on 選手2.選手番号 = 記録.第２泳者 and 選手2.大会番号=記録.大会番号
-    inner join 選手 as 選手3 on 選手3.選手番号 = 記録.第３泳者 and 選手3.大会番号=記録.大会番号
-    inner join 選手 as 選手4 on 選手4.選手番号 = 記録.第４泳者 and 選手4.大会番号=記録.大会番号
-    inner join プログラム on プログラム.競技番号=記録.競技番号 and プログラム.大会番号=  記録.大会番号
-		inner join 距離 on 距離.距離コード=プログラム.距離コード
-	inner join 種目 on 種目.種目コード=プログラム.種目コード
-	inner join ラップ on ラップ.大会番号=記録.大会番号　
-                 and ラップ.競技番号=記録.競技番号
-				 and ラップ.組=記録.組
-				 and ラップ.水路=記録.水路";
-            if (MDBInterface.ClassExist) {
-                myQuery += @"
-	inner join クラス on クラス.大会番号=記録.大会番号
-	             and クラス.クラス番号=記録.新記録判定クラス";
-            }
-                myQuery += @"
-
-	inner join 予決 on 予決.予決コード = プログラム.予決コード
-    WHERE /*記録.事由表示 = 0 and*/ 
-        記録.大会番号=   @eventNo 
-    　　and プログラム.種目コード>5 
-		order by 表示用競技番号
+            string myQuery = " exec GetRanking @eventNo";
    
-            ";
             bool first = true;
             int classNo=0;
             int prgNo=0;
@@ -480,23 +347,33 @@ namespace websoku86v6
                     bool inTable = false;
                     while(dr.Read())
                     {
+                        string swimmerName;
+                        swimmerName = (string)dr["第1泳者"];
 
                         if (first) {
                             first=false;
                             PrintHTMLHead( sw,MDBInterface.GetEventName(), MDBInterface.GetEventDate(),MDBInterface.GetEventVenue(), 2);
                         }
                         if (MDBInterface.ClassExist)
-                        classNo = Convert.ToInt32(dr["CLASSNO"]);
+                        classNo = Convert.ToInt32(dr["クラス番号"]);
                         prgNo = Convert.ToInt32(dr["PRGNO"]);
                         if ((classNo != classNoSave )||(prgNo !=prgNoSave)) {
                             if (inTable)
                                 sw.WriteLine("</table>");
+                            if ((string)dr["第2泳者"] != "")
+                                swimmerName = swimmerName + "<br>"
+                                    + (string)dr["第2泳者"] + "<br>"
+                                    + (string)dr["第3泳者"] + "<br>"
+                                    + (string)dr["第4泳者"]; 
+
 
                             prgNoSave = prgNo;
                             classNoSave = classNo;
                             //static void PrintShumoku(StreamWriter sw, int prgNo, string className, string gender, string distance, string style, string phase, string gameRecord)
                             string className="";
-                            if (MDBInterface.ClassExist) className = (string)dr["クラス名称"];
+                            if (MDBInterface.ClassExist) className = dr["クラス名称"] == DBNull.Value
+                                        ? ""
+                                        : (string)dr["クラス名称"];
                             PrintShumoku(sw, prgNo, className, (string)dr["性別"],
                                   (string)dr["距離"], (string)dr["種目"], (string)dr["予決"], 
                                   Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
@@ -522,7 +399,7 @@ namespace websoku86v6
                         }
 
 
-                        sw.WriteLine("<td valign=\"top\">" + (string)dr["氏名"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">" + swimmerName + "</td>");
                         sw.WriteLine("<td valign=\"top\">" + (string)dr["所属"] + "</td>");
                         sw.WriteLine("<td valign=\"top\">");
                         if (Convert.ToInt32(dr["事由表示"]) == 0)
