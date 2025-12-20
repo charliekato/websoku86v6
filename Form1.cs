@@ -27,6 +27,7 @@ namespace websoku86v6
         public static string ServerName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
                 secKeyFile = "";
+        public static bool inclusiveTournament = false;
         string hostName = "", port = "22", userName = "";
         public Form1()
         {
@@ -84,6 +85,7 @@ namespace websoku86v6
                 txtBoxHtmlPath.Text, txtBoxIndexFile.Text, txtBoxPrgResult.Text, txtBoxRanking.Text,
                 txtBoxScoreFile.Text, txtBoxHostName.Text, txtBoxPort.Text,
                 txtBoxUserName.Text, txtBoxKeyFile.Text);
+            inclusiveTournament=this.checkBoxInclusiveTournament.Checked;
             Html.CreateHTML(
                 txtBoxServerName.Text,
                 int.Parse(txtBoxEventNo.Text),
@@ -239,7 +241,10 @@ namespace websoku86v6
             if (rankingFile != string.Empty)
             {
                 string srcFile = workDir + "\\" + rankingFile;
-                CreateRankingFile(eventNo,srcFile,indexFile, kanproFile);
+                if (Form1.inclusiveTournament)
+                    CreateRanking4Inclusive(eventNo,srcFile,indexFile, kanproFile);
+                else
+                    CreateRankingFile(eventNo, srcFile, indexFile, kanproFile);
                 if (keyFile != "")
                     Misc.SendFile(srcFile, rankingFilePath, hostName, port, userName, keyFile);
             }
@@ -481,7 +486,159 @@ namespace websoku86v6
                 }
             }
         }
+        static void CreateRanking4Inclusive(int eventNo, string srcFile, string indexFile, string prgFile)
+        {
+            const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
+            string connectionString = $" Server={MDBInterface.SERVERName}{magicWord}";
 
+            string myQuery = " exec getRanking4Inclusive @eventNo";
+   
+            bool first = true;
+            int prgNo=0;
+            int prgNoSave = 0;
+            using (StreamWriter sw = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis"))) {
+
+                SqlConnection conn = new SqlConnection(connectionString);
+                SqlCommand comm = new SqlCommand(myQuery, conn);
+                comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
+                conn.Open();
+                using (var dr = comm.ExecuteReader())
+                {
+                    bool inTable = false;
+                    while(dr.Read())
+                    {
+                        string swimmerName;
+                        swimmerName = (string)dr["第1泳者"];
+
+                        if (first) {
+                            first=false;
+                            PrintHTMLHead( sw,MDBInterface.GetEventName(), MDBInterface.GetEventDate(),MDBInterface.GetEventVenue(), 2);
+                        }
+                        if (MDBInterface.ClassExist)
+                        prgNo = Convert.ToInt32(dr["PRGNO"]);
+                        if ((prgNo !=prgNoSave)) {
+                            if (inTable)
+                                sw.WriteLine("</table>");
+                            if ((string)dr["第2泳者"] != "")
+                                swimmerName = swimmerName + "<br>"
+                                    + (string)dr["第2泳者"] + "<br>"
+                                    + (string)dr["第3泳者"] + "<br>"
+                                    + (string)dr["第4泳者"]; 
+
+
+                            prgNoSave = prgNo;
+                            //static void PrintShumoku(StreamWriter sw, int prgNo, string className, string gender, string distance, string style, string phase, string gameRecord)
+                            PrintShumoku(sw, prgNo, "", (string)dr["性別"],
+                                  (string)dr["距離"], (string)dr["種目"], (string)dr["予決"], 
+                                  Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
+                            sw.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + prgFile + "#PRGH" + prgNo + "\">レーン順の結果</a>&nbsp;");
+                            sw.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
+                            sw.WriteLine("<br><br>");
+                            sw.WriteLine("<table border=\"0\" width=\"100%\">");
+                            inTable = true;
+                            sw.WriteLine(@"<tr><th align=""left"" width=""8%"">順位</th>
+                                <th align=""left"" width=""23%"">氏名</th>
+                                <th align=""left"" width=""24%"">所属</th>
+                                <th align=""left"" width=""11%"">クラス</th>
+                                <th align=""left"" width=""13%"">ポイント</th>
+                                <th align=""left"" width=""17%"">タイム</th>
+                                <th align=""left"" width=""12%"">新記録</th></tr>");
+
+                        }
+                        if ((string)(dr["棄権印刷マーク"])=="") {
+
+                            sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 10px\">" + Convert.ToInt32(dr["順位"]) + "</td>");
+                        }
+                        else {
+
+                            sw.WriteLine("<tr><td align=\"right\" valign=\"top\" style=\"padding-right: 10px\">  </td>");
+                        }
+
+
+                        sw.WriteLine("<td valign=\"top\">" + swimmerName + "</td>");
+                        sw.WriteLine("<td valign=\"top\">" + (string)dr["所属"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">" + (string)dr["クラス名称"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">");
+                        if ((string)(dr["棄権印刷マーク"]) == "")
+                        {
+                            sw.WriteLine(""+Convert.ToInt32(dr["ポイント"]) + "</td><td>" );
+                            sw.WriteLine((string)dr["ゴール"]+"</td><td> " + (string)dr["新記録印刷マーク"]+"</td></tr>");
+                        }
+                        else
+                        {
+                            sw.WriteLine((string)dr["棄権印刷マーク"]+"</td></tr>");
+                        }
+
+                        string distance = (string)dr["距離"];
+                        int numberOfLap = MDBInterface.HowManyLapTimes(distance);
+                        string prevLap;
+                        int splitCounter;
+                        int ithLap;
+                        string thisLap;
+                        string thisLapMeter;
+                        string[] splitTime = new string[5];
+
+                        if (numberOfLap > 1)               
+                        {                                  
+                            prevLap = "";                  
+                            splitCounter = 1;              
+                                                            
+
+                            for (ithLap = 1; ithLap <= numberOfLap; ithLap++)
+                            {
+                               
+                                thisLapMeter = GetLap(ithLap, MDBInterface.lapCode);
+                                thisLap = (string) dr[thisLapMeter];
+                                if (ithLap % 4 == 1) // was 1 now is 0
+                                {
+                                    sw.WriteLine("<tr> <td colspan=4 align=\"center\"> <div class=\"lap_container\">");
+                                }
+
+                                sw.WriteLine("<div class=\"lap_time\">" + thisLap + "</div>");
+
+                                if (ithLap == 1) // was 1 now is 0
+                                {
+                                    splitTime[splitCounter] = "";
+                                }
+                                else
+                                {
+                                    if (thisLap != "")
+                                    {
+                                        if (prevLap != "")
+                                            splitTime[splitCounter] = "(" + Misc.TimeSubtract(thisLap, prevLap) + ")";
+                                        else
+                                            splitTime[splitCounter] = "";
+                                    }
+                                    else
+                                    {
+                                        splitTime[splitCounter] = "";
+                                    }
+
+                                }
+
+                                splitCounter++;
+
+                                prevLap = thisLap;
+
+                                if (ithLap % 4 == 0) // was 0 is 3
+                                {
+                                    sw.WriteLine("</div></td></tr>");
+                                    splitCounter = 1;
+                                    Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], splitTime[3], splitTime[4]);
+                                }
+                            }
+
+                            if (ithLap % 4 == 3) //was 3 is 2
+                            {
+                                sw.WriteLine("<div class=\"lap_time\">  </div><div class=\"lap_time\"> </div></td></tr>");
+                                Misc.PrintSplitTime(sw, splitTime[1], splitTime[2], "", "");
+                            }
+                        }
+                    }
+                    sw.WriteLine("</table>");
+                }
+            }
+        }
 
 
 static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
