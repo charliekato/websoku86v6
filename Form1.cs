@@ -329,6 +329,12 @@ namespace websoku86v6
             return Convert.ToString(intLap) + "m";
 
         }
+
+        public static string if_not_null_string(object dr)
+        {
+            if (dr == DBNull.Value) return "";
+            return (string)dr;
+        }
         static void CreateRankingFile(int eventNo, string srcFile, string indexFile, string prgFile)
         {
             const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
@@ -353,7 +359,7 @@ namespace websoku86v6
                     while(dr.Read())
                     {
                         string swimmerName;
-                        swimmerName = (string)dr["‘æ1‰jŽÒ"];
+                        swimmerName = if_not_null_string(dr["‘æ1‰jŽÒ"]);
 
                         if (first) {
                             first=false;
@@ -365,11 +371,11 @@ namespace websoku86v6
                         if ((classNo != classNoSave )||(prgNo !=prgNoSave)) {
                             if (inTable)
                                 sw.WriteLine("</table>");
-                            if ((string)dr["‘æ2‰jŽÒ"] != "")
+                            if (if_not_null_string(dr["‘æ2‰jŽÒ"]) != "")
                                 swimmerName = swimmerName + "<br>"
-                                    + (string)dr["‘æ2‰jŽÒ"] + "<br>"
-                                    + (string)dr["‘æ3‰jŽÒ"] + "<br>"
-                                    + (string)dr["‘æ4‰jŽÒ"]; 
+                                    + if_not_null_string(dr["‘æ2‰jŽÒ"]) + "<br>"
+                                    + if_not_null_string(dr["‘æ3‰jŽÒ"]) + "<br>"
+                                    + if_not_null_string(dr["‘æ4‰jŽÒ"]); 
 
 
                             prgNoSave = prgNo;
