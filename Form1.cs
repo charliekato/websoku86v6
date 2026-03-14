@@ -26,7 +26,7 @@ namespace websoku86v6
 #endif
         public static string ServerName = "daisy", eventNoStr = "", htmlPath = "",
                 indexFile = "", prgResult = "", rankingFile = "", scoreFile = "",
-                secKeyFile = "";
+                secKeyFile = "", password="";
         public static bool inclusiveTournament = false;
         string hostName = "", port = "22", userName = "";
         public Form1()
@@ -36,10 +36,11 @@ namespace websoku86v6
             this.Height = 600;
 
 
-            Misc.ReadConfigFile(iniFile, ref ServerName, ref eventNoStr,
+            Misc.ReadConfigFile(iniFile, ref ServerName, ref password, ref eventNoStr,
                 ref htmlPath, ref indexFile, ref prgResult, ref rankingFile,
                 ref scoreFile, ref hostName, ref port, ref userName, ref secKeyFile);
             txtBoxServerName.Text = ServerName;
+	    txtBoxPassword.Text = password; 
             txtBoxEventNo.Text = eventNoStr.Trim();
             txtBoxIndexFile.Text = indexFile;
             txtBoxPrgResult.Text = prgResult;
@@ -81,13 +82,14 @@ namespace websoku86v6
         private void CreateRun(object sender, EventArgs ev)
         {
             Cursor.Current = Cursors.WaitCursor;
-            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
+            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxPassword.Text, txtBoxEventNo.Text,
                 txtBoxHtmlPath.Text, txtBoxIndexFile.Text, txtBoxPrgResult.Text, txtBoxRanking.Text,
                 txtBoxScoreFile.Text, txtBoxHostName.Text, txtBoxPort.Text,
                 txtBoxUserName.Text, txtBoxKeyFile.Text);
             inclusiveTournament=this.checkBoxInclusiveTournament.Checked;
             Html.CreateHTML(
                 txtBoxServerName.Text,
+                txtBoxPassword.Text,
                 int.Parse(txtBoxEventNo.Text),
                 workDir,
                 txtBoxIndexFile.Text,
@@ -131,7 +133,7 @@ namespace websoku86v6
         }
         private void btnQuit_Click(object sender, EventArgs e)
         {
-            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxEventNo.Text,
+            Misc.WriteConfigFile(iniFile, txtBoxServerName.Text, txtBoxPassword.Text, txtBoxEventNo.Text,
                 txtBoxHtmlPath.Text, txtBoxIndexFile.Text, txtBoxPrgResult.Text, txtBoxRanking.Text,
                 txtBoxScoreFile.Text, txtBoxHostName.Text, txtBoxPort.Text,
                 txtBoxUserName.Text, txtBoxKeyFile.Text);
@@ -139,7 +141,7 @@ namespace websoku86v6
         }
         private void btnConfirmServer_Click(object sender, EventArgs e)
         {
-            if (MDBInterface.ServerAccessOK(txtBoxServerName.Text))
+            if (MDBInterface.ServerAccessOK(txtBoxServerName.Text, txtBoxPassword.Text))
             {
                 MessageBox.Show(" Server Connection OK. Go ahead.");
             }
@@ -168,6 +170,7 @@ namespace websoku86v6
 
         private void btnRun_Click(object sender, EventArgs e)
         {
+            MDBInterface.setConnectionString(txtBoxServerName.Text, txtBoxPassword.Text);
             CreateRun(sender, e);
         }
 
@@ -196,8 +199,8 @@ namespace websoku86v6
         //        static string extraMessageURL = "https://result.swim.or.jp/tournament/list?member_group_code=25&official_group_code=25";
         //        static string extraMessage = "県内の過去のレースの結果はこちらです。";
         public static void CreateHTML(
-            //string mdbFile,    // Seiko Result System database.
-            string serverName,
+            string serverName,    // Seiko Result System database.
+            string password,      // password for the database
             int eventNo,     //  V6 support
             string workDir,    // local PC work directory
             string indexFile,  //indexFile   is something like ossSpring2024.Html
@@ -217,14 +220,14 @@ namespace websoku86v6
             string kanproFilePath;
             string teamScoreFilePath;
             string distDir = htmlDir + "/";
-            MDBInterface mdb2Html;
             thisYouTubeURL = youTubeURL;
             if (!Directory.Exists(workDir))
             {
                 MessageBox.Show("作業フォルダー(" + workDir + ")が見つかりません。");
                 return;
             }
-            mdb2Html = new MDBInterface(serverName, eventNo);
+            MDBInterface.init( serverName,password, eventNo);
+
 
             ///Call init_machin_specific_variables
             indexFilePath = distDir + indexFile;
@@ -234,7 +237,7 @@ namespace websoku86v6
             if (indexFile != string.Empty)
             {
                 string srcFile = workDir + "\\" + indexFile;
-                CreateIndexHTML(mdb2Html, srcFile, rankingFile, kanproFile);
+                CreateIndexHTML( srcFile, rankingFile, kanproFile);
                 if (keyFile != "")
                     Misc.SendFile(srcFile, indexFilePath, hostName, port, userName, keyFile);
             }
@@ -252,7 +255,7 @@ namespace websoku86v6
             if (kanproFile != string.Empty)
             {
                 string srcFile = workDir + "\\" + kanproFile;
-                CreateHTMLProgramFormat(mdb2Html, srcFile, indexFile, rankingFile);
+                CreateHTMLProgramFormat(srcFile, indexFile, rankingFile);
                 if (keyFile != "")
                     Misc.SendFile(srcFile, kanproFilePath, hostName, port, userName, keyFile);
             }
@@ -290,19 +293,19 @@ namespace websoku86v6
         }
 
 
-        static void PrintShumoku(MDBInterface mdb, StreamWriter sw, int prgNo)
+        static void PrintShumoku(StreamWriter sw, int prgNo)
         {
             sw.WriteLine("<hr id=\"PRGH" + prgNo + "\">");
             sw.WriteLine("<table width=\"95%\">");
             sw.WriteLine("  <tr>");
             sw.WriteLine("    <td>  No. " + prgNo + "</td> <td>" +
-                         mdb.GetGenderFromPrgNo(prgNo) + "</td><td>" +
-                         mdb.GetClassFromPrgNo(prgNo) + "</td>" +
-                         "<td align=\"right\">" + mdb.GetDistanceFromPrgNo(prgNo) + "</td>" +
-                         "<td align=\"left\">" + mdb.GetStyleFromPrgNo(prgNo) + "</td>" +
-                         "<td align=\"right\">" + mdb.GetPhaseFromPrgNo(prgNo) + "&nbsp;&nbsp;");
+                         MDBInterface.GetGenderFromPrgNo(prgNo) + "</td><td>" +
+                         MDBInterface.GetClassFromPrgNo(prgNo) + "</td>" +
+                         "<td align=\"right\">" + MDBInterface.GetDistanceFromPrgNo(prgNo) + "</td>" +
+                         "<td align=\"left\">" + MDBInterface.GetStyleFromPrgNo(prgNo) + "</td>" +
+                         "<td align=\"right\">" + MDBInterface.GetPhaseFromPrgNo(prgNo) + "&nbsp;&nbsp;");
 
-            if (mdb.GameRecordAvailable)
+            if (MDBInterface.GameRecordAvailable)
             {
                 sw.WriteLine("大会記録:" + Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
             }
@@ -337,10 +340,8 @@ namespace websoku86v6
         }
         static void CreateRankingFile(int eventNo, string srcFile, string indexFile, string prgFile)
         {
-            const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
-            string connectionString = $" Server={MDBInterface.SERVERName}{magicWord}";
 
-            string myQuery = " exec GetRanking @eventNo";
+            string myQuery = " exec getRankingClass @eventNo";
    
             bool first = true;
             int classNo=0;
@@ -349,7 +350,7 @@ namespace websoku86v6
             int prgNoSave = 0;
             using (StreamWriter sw = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis"))) {
 
-                SqlConnection conn = new SqlConnection(connectionString);
+                SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
                 conn.Open();
@@ -368,15 +369,15 @@ namespace websoku86v6
                         if (MDBInterface.ClassExist)
                         classNo = Convert.ToInt32(dr["クラス番号"]);
                         prgNo = Convert.ToInt32(dr["PRGNO"]);
+                        if (if_not_null_string(dr["第2泳者"]) != "")
+                            swimmerName = swimmerName + "<br>"
+                                + if_not_null_string(dr["第2泳者"]) + "<br>"
+                                + if_not_null_string(dr["第3泳者"]) + "<br>"
+                                + if_not_null_string(dr["第4泳者"]); 
+
                         if ((classNo != classNoSave )||(prgNo !=prgNoSave)) {
                             if (inTable)
                                 sw.WriteLine("</table>");
-                            if (if_not_null_string(dr["第2泳者"]) != "")
-                                swimmerName = swimmerName + "<br>"
-                                    + if_not_null_string(dr["第2泳者"]) + "<br>"
-                                    + if_not_null_string(dr["第3泳者"]) + "<br>"
-                                    + if_not_null_string(dr["第4泳者"]); 
-
 
                             prgNoSave = prgNo;
                             classNoSave = classNo;
@@ -494,8 +495,6 @@ namespace websoku86v6
         }
         static void CreateRanking4Inclusive(int eventNo, string srcFile, string indexFile, string prgFile)
         {
-            const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
-            string connectionString = $" Server={MDBInterface.SERVERName}{magicWord}";
 
             string myQuery = " exec getRanking4Inclusive @eventNo";
    
@@ -504,7 +503,7 @@ namespace websoku86v6
             int prgNoSave = 0;
             using (StreamWriter sw = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis"))) {
 
-                SqlConnection conn = new SqlConnection(connectionString);
+                SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
                 SqlCommand comm = new SqlCommand(myQuery, conn);
                 comm.Parameters.Add("@eventNo", SqlDbType.Int).Value = eventNo;
                 conn.Open();
@@ -520,7 +519,8 @@ namespace websoku86v6
                             first=false;
                             PrintHTMLHead( sw,MDBInterface.GetEventName(), MDBInterface.GetEventDate(),MDBInterface.GetEventVenue(), 2);
                         }
-                        if (MDBInterface.ClassExist)
+                        //if (MDBInterface.ClassExist)
+                        //classNo = Convert.ToInt32(dr["クラス番号"]);
                         prgNo = Convert.ToInt32(dr["PRGNO"]);
                         if ((prgNo !=prgNoSave)) {
                             if (inTable)
@@ -647,45 +647,45 @@ namespace websoku86v6
         }
 
 
-static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
+static string HtmlName4Relay(int[] rswimmer )
         {
-                           return mdb.GetSwimmerName(rswimmer[0]) + "&nbsp;&nbsp; " +
-                                             mdb.GetSwimmerName(rswimmer[1]) + "<br>" +
-                                             mdb.GetSwimmerName(rswimmer[2]) + "&nbsp; &nbsp;" +
-                                             mdb.GetSwimmerName(rswimmer[3]) + "</td>";
+                           return MDBInterface.GetSwimmerName(rswimmer[0]) + "&nbsp;&nbsp; " +
+                                             MDBInterface.GetSwimmerName(rswimmer[1]) + "<br>" +
+                                             MDBInterface.GetSwimmerName(rswimmer[2]) + "&nbsp; &nbsp;" +
+                                             MDBInterface.GetSwimmerName(rswimmer[3]) + "</td>";
 
 
         }
-        static void CreateHTMLProgramFormat(MDBInterface mdb, string srcFile, string indexFile, string rankingFile)
+        static void CreateHTMLProgramFormat(string srcFile, string indexFile, string rankingFile)
         {
 
-            int maxProgramNo = mdb.MaxProgramNo; // You need to implement GetMaxProgramNo() function
+            int maxProgramNo = MDBInterface.MaxProgramNo; // You need to implement GetMaxProgramNo() function
 
             using (StreamWriter writer = new StreamWriter(srcFile, false, System.Text.Encoding.GetEncoding("shift_jis")))
             {
-                PrintHTMLHead2(mdb, writer, 2);
+                PrintHTMLHead2( writer, 2);
 
                 for (int prgNo = 1; prgNo <= maxProgramNo; prgNo++)
                 {
-                    int uid = mdb.GetUIDFromPrgNo(prgNo);
+                    int uid = MDBInterface.GetUIDFromPrgNo(prgNo);
 
-                    PrintShumoku(mdb, writer, prgNo);
+                    PrintShumoku(writer, prgNo);
                     writer.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + rankingFile + "#PRGH" + prgNo + "\">ランキング</a>&nbsp;");
                     writer.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
-                    PrintRaceResult(mdb, writer, prgNo, uid);
+                    PrintRaceResult(writer, prgNo, uid);
                 }
 
                 PrintTailAndClose(writer);
             }
         }
 
-        static void PrintRaceResult(MDBInterface mdb, StreamWriter writer, int prgNo, int uid)
+        static void PrintRaceResult(StreamWriter writer, int prgNo, int uid)
         {
 
             int kumi = 0;
 
             List<Result> results = new List<Result>();
-            mdb.GetResultList(uid, ref results);
+            MDBInterface.GetResultList(uid, ref results);
 
             foreach (Result record in results)
             {
@@ -707,7 +707,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
                     /* zero lane */
                     int laneNo = record.laneNo;
-                    if (mdb.zeroUse) laneNo--;
+                    if (MDBInterface.zeroUse) laneNo--;
 
                     string laneStr = (record.laneNo >= 50) ? "補欠" + (record.laneNo - 49).ToString() : laneNo.ToString();
 
@@ -717,18 +717,18 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                     {
                         writer.WriteLine("<td align=\"left\">&nbsp;");
 
-                        if (Misc.IsRelay(mdb.GetStyleFromPrgNo(prgNo)))
+                        if (Misc.IsRelay(MDBInterface.GetStyleFromPrgNo(prgNo)))
                         {
-                            writer.WriteLine(mdb.GetRelayTeamName(record.swimmerID) + "</td><td align=\"left\">" +
-                                             mdb.GetSwimmerName(record.rswimmer[0]) + "&nbsp;&nbsp; " +
-                                             mdb.GetSwimmerName(record.rswimmer[1]) + "<br>" +
-                                             mdb.GetSwimmerName(record.rswimmer[2]) + "&nbsp; &nbsp;" +
-                                             mdb.GetSwimmerName(record.rswimmer[3]) + "</td>");
+                            writer.WriteLine(MDBInterface.GetRelayTeamName(record.swimmerID) + "</td><td align=\"left\">" +
+                                             MDBInterface.GetSwimmerName(record.rswimmer[0]) + "&nbsp;&nbsp; " +
+                                             MDBInterface.GetSwimmerName(record.rswimmer[1]) + "<br>" +
+                                             MDBInterface.GetSwimmerName(record.rswimmer[2]) + "&nbsp; &nbsp;" +
+                                             MDBInterface.GetSwimmerName(record.rswimmer[3]) + "</td>");
                         }
                         else
                         {
-                            writer.Write(mdb.GetSwimmerName(record.swimmerID) + "</td>" +
-                                             "<td align=\"left\"> (" + mdb.GetTeamName(record.swimmerID) + ")</td>");
+                            writer.Write(MDBInterface.GetSwimmerName(record.swimmerID) + "</td>" +
+                                             "<td align=\"left\"> (" + MDBInterface.GetTeamName(record.swimmerID) + ")</td>");
                         }
 
                         if (record.reasonCode == 0)
@@ -814,7 +814,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
         }
 
-        static void PrintHTMLHead2(MDBInterface mdb, StreamWriter writer, int fType)
+        static void PrintHTMLHead2( StreamWriter writer, int fType)
         {
             writer.WriteLine("<?php");
             writer.WriteLine(" header(\"Content-Type: text/html; charset=Shift-JIS\");");
@@ -860,7 +860,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 //            writer.WriteLine($"<h3><a href=\" {extraMessageURL} \">" + extraMessage + "</a></h3>");
 
         }
-        static void CreateIndexHTML(MDBInterface mdb, string myName, string rankingFile, string kanproFile)
+        static void CreateIndexHTML( string myName, string rankingFile, string kanproFile)
         {
             int prgNo;
             int maxPrgNo;
@@ -868,24 +868,24 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
             using (StreamWriter writer = new StreamWriter(myName, false, System.Text.Encoding.GetEncoding("shift_jis")))
             {
-                PrintHTMLHead2(mdb, writer, 1);
+                PrintHTMLHead2( writer, 1);
                 writer.WriteLine("<table id=\"sampleTable\" border=\"0\" width=\"95%\">");
                 writer.WriteLine("<tr><th cmanFilterBtn>競技番号</th><th cmanFilterBtn>クラス</th>" +
                                  "<th cmanFilterBtn>性別</th><th cmanFilterBtn>距離</th>" +
                                  "<th cmanFilterBtn>種目</th><th cmanFilterBtn>予/決</th><th>  </th><th>  </th></tr>");
-                maxPrgNo = mdb.MaxProgramNo;
+                maxPrgNo = MDBInterface.MaxProgramNo;
 
                 for (prgNo = 1; prgNo <= maxPrgNo; prgNo++)
                 {
-                    uid = mdb.GetUIDFromPrgNo(prgNo);
+                    uid = MDBInterface.GetUIDFromPrgNo(prgNo);
                     if (uid != 0)
                     {
                         writer.WriteLine($"<tr><td align=\"right\">{prgNo}</td>");
-                        writer.WriteLine($"<td align=\"left\">{mdb.GetClassFromPrgNo(prgNo)}</td>");
-                        writer.WriteLine($"<td align=\"center\">{mdb.GetGenderFromPrgNo(prgNo)}</td> ");
-                        writer.WriteLine($"<td align=\"right\">{mdb.GetDistanceFromPrgNo(prgNo)}</td>");
-                        writer.WriteLine($"<td align=\"left\">{mdb.GetStyleFromPrgNo(prgNo)}</td>");
-                        writer.WriteLine($"<td align=\"left\">{mdb.GetPhaseFromPrgNo(prgNo)}</td>");
+                        writer.WriteLine($"<td align=\"left\">{MDBInterface.GetClassFromPrgNo(prgNo)}</td>");
+                        writer.WriteLine($"<td align=\"center\">{MDBInterface.GetGenderFromPrgNo(prgNo)}</td> ");
+                        writer.WriteLine($"<td align=\"right\">{MDBInterface.GetDistanceFromPrgNo(prgNo)}</td>");
+                        writer.WriteLine($"<td align=\"left\">{MDBInterface.GetStyleFromPrgNo(prgNo)}</td>");
+                        writer.WriteLine($"<td align=\"left\">{MDBInterface.GetPhaseFromPrgNo(prgNo)}</td>");
                         writer.WriteLine($"<td> <a href=\"{kanproFile}#PRGH{prgNo}\"> レーン順</a></td>");
                         writer.WriteLine($"<td> <a href=\"{rankingFile}#PRGH{prgNo}\"> 順位表</a></td></tr>");
                     }
@@ -906,15 +906,19 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         }
 
     }
-    public class MDBInterface
+    public static class MDBInterface
     {
         const int NORECORDYET = 0;
-        private List<Result> resultList;
+        private static List<Result> resultList;
+        public static string connectionString { get; set; }
+        public static void setConnectionString(string serverName, string password)
+        {
+            connectionString = $"Server={serverName}\\SQLEXPRESS;User ID=Sw;Database=Sw;Encrypt=False;Password={password};";
+        }
 
 
 
-        public Result GetResult(int rn) { return resultList[rn]; }
-        public void GetResultList(int prgNo, ref List<Result> extracted)
+        public static void GetResultList(int prgNo, ref List<Result> extracted)
         {
             foreach (Result result in resultList)
             {
@@ -924,28 +928,27 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 }
             }
         }
-        private readonly int eventNo;
+        private static int eventNo;
         public static string SERVERName;
 
-        private readonly string[] ShumokuTable = new string[8];
-        public string GetShumoku(int id) { return ShumokuTable[id]; }
-        private readonly string[] DistanceTable = new string[11];
-        private readonly string[] YoketsuTable = new string[9];
+        private static string[] ShumokuTable = new string[8];
+        public static string GetShumoku(int id) { return ShumokuTable[id]; }
+        private static string[] DistanceTable = new string[11];
+        private static string[] YoketsuTable = new string[9];
 
-        private const string magicWord = "\\SQLEXPRESS;User ID=Sw;Password=;Database=Sw;TrustServerCertificate=True;Encrypt=True";
         private const string magicHead = "Server=";
-        private string[] genderStr;
-        public bool GameRecordAvailable;
-        private string[] swimmerName;
-        public string GetSwimmerName(int id) { return swimmerName[id]; }
-        private string[] kana;
-        private int[] belongsTo;
-        public string GetTeamName(int swimmerID) { return clubName[belongsTo[swimmerID]]; }
-        private string[] clubName;
+        private static string[] genderStr;
+        public static bool GameRecordAvailable;
+        public static string[] swimmerName;
+        public static string GetSwimmerName(int id) { return swimmerName[id]; }
+        private static string[] kana;
+        private  static int[] belongsTo;
+        public static string GetTeamName(int swimmerID) { return clubName[belongsTo[swimmerID]]; }
+        private static string[] clubName;
 
-        static public bool ServerAccessOK(string serverName)
+        static public bool ServerAccessOK(string serverName, string password)
         {
-            string connectionString = magicHead + serverName + magicWord;
+            setConnectionString(serverName,password);
             string sqlQuery = "select * from クラス";
             try
             {
@@ -969,53 +972,54 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             catch (Exception ex)
             {
 
+                MessageBox.Show(ex.ToString());
                 return false;
             }
         }
-        private readonly int maxProgramNo = 0;
-        public int MaxProgramNo
+        private static int maxProgramNo = 0;
+        public static int MaxProgramNo
         {
             get { return maxProgramNo; }
         }
-        private readonly int maxUID = 0;
-        public int MaxUID
+        private static int maxUID = 0;
+        static public int MaxUID
         {
             get { return maxUID; }
         }
-        int touchBoard; // 1--50m  2--100m  3--25m   4--50m 
-        public bool zeroUse { get; set; }
+        static int touchBoard; // 1--50m  2--100m  3--25m   4--50m 
+        public static bool zeroUse { get; set; }
         public static int lapCode { get; set; }
 
-        private int[] UIDFromPrgNo;
-        int[] ClassNoByPrgNo;
-        int[] genderByPrgNo;　　// 男子, 女子, 混合
-        int[] styleByPrgNo;
-        int[] distanceByPrgNo;
-        string[] phaseByPrgNo; // 予選/決勝/タイム決勝
+        private static int[] UIDFromPrgNo;
+        static int[] ClassNoByPrgNo;
+        static int[] genderByPrgNo;　　// 男子, 女子, 混合
+        static int[] styleByPrgNo;
+        static int[] distanceByPrgNo;
+        static string[] phaseByPrgNo; // 予選/決勝/タイム決勝
         static int[] gameRecord4PrgNo;
         static public int GetGameRecord(int prgNo) { return gameRecord4PrgNo[prgNo]; }
-        int[] numSwimmers4UID;
-        public int GetHowManySwimmers(int uid) { return numSwimmers4UID[uid]; }
-        public int GetUIDFromPrgNo(int prgNo) { return UIDFromPrgNo[prgNo]; }
+        static int[] numSwimmers4UID;
+        public static int GetHowManySwimmers(int uid) { return numSwimmers4UID[uid]; }
+        public static int GetUIDFromPrgNo(int prgNo) { return UIDFromPrgNo[prgNo]; }
 
-        public string GetClassFromPrgNo(int uid) { return className[ClassNoByPrgNo[uid]]; }
-        public string GetGenderFromPrgNo(int uid) { return genderStr[genderByPrgNo[uid]]; }
-        public string GetStyleFromPrgNo(int uid) { return ShumokuTable[styleByPrgNo[uid]]; }
-        public string GetDistanceFromPrgNo(int uid) { return DistanceTable[distanceByPrgNo[uid]]; }
-        public int GetDistanceCodeFromPrgNo(int uid) { return distanceByPrgNo[uid]; }
-        public string GetPhaseFromPrgNo(int uid) { return phaseByPrgNo[uid]; }
+        public static string GetClassFromPrgNo(int uid) { return className[ClassNoByPrgNo[uid]]; }
+        public static string GetGenderFromPrgNo(int uid) { return genderStr[genderByPrgNo[uid]]; }
+        public static string GetStyleFromPrgNo(int uid) { return ShumokuTable[styleByPrgNo[uid]]; }
+        public static string GetDistanceFromPrgNo(int uid) { return DistanceTable[distanceByPrgNo[uid]]; }
+        public static int GetDistanceCodeFromPrgNo(int uid) { return distanceByPrgNo[uid]; }
+        public static string GetPhaseFromPrgNo(int uid) { return phaseByPrgNo[uid]; }
 
 
-        private readonly string[] TeamName4Relay;
-        public string GetRelayTeamName(int id)
+        private static string[] TeamName4Relay;
+        public static string GetRelayTeamName(int id)
         {
             return TeamName4Relay[id];
         }
 #nullable enable
-        public MDBInterface(string serverName, int eventNo)
+        public static void init(string serverName,string password, int eventNo_)
         {
-            this.eventNo = eventNo;
-            SERVERName = serverName;
+            eventNo = eventNo_;
+            setConnectionString(serverName,password);
             InitTables();
             resultList = new List<Result>();
             InitProgramDB(ref maxProgramNo, ref maxUID);
@@ -1077,7 +1081,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         }
 
 
-        public void GetResultNo(ref List<int> recordNums, int uid, int rank)
+        public static void GetResultNo(ref List<int> recordNums, int uid, int rank)
         {
             for (int i = 0; i < resultList.Count; i++)
             {
@@ -1087,7 +1091,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 }
             }
         }
-        void ReadMDB()
+        static void ReadMDB()
         {
             ReadEventDB();
             ReadTeamDB();
@@ -1100,10 +1104,10 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             AnalyzeResult();
         }
         /*-----------------get_lap_interval-------*/
-        void InitLapInterval()
+        static void InitLapInterval()
         {
 
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT タッチ板 FROM 大会設定 where 大会番号=" + eventNo + ";";
@@ -1137,7 +1141,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         短水路片側   4           2           50m
          */
 
-        void InitStyleTable()
+        static void InitStyleTable()
         {
             /*
             ShumokuTable[0] = "";
@@ -1149,7 +1153,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             ShumokuTable[6] = "リレー";
             ShumokuTable[7] = "メドレーリレー";
             */
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT 種目, 種目コード FROM 種目 ;";
@@ -1172,9 +1176,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 }
             }
         }
-        void InitYoketsuTable()
+        static void InitYoketsuTable()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT 予決コード, 予決 FROM 予決;";
@@ -1199,7 +1203,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
         public static bool ClassExist=false;
-        void InitDistanceTable()
+        static void InitDistanceTable()
         {
             /*
             DistanceTable[0] = "";
@@ -1212,7 +1216,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             DistanceTable[7] = "1500m";
             */
 
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT 距離コード, 距離 FROM 距離;";
@@ -1237,7 +1241,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
 
-        int LocateDistanceID(string distance)
+        static int LocateDistanceID(string distance)
         {
             for (int cnt = 1; cnt < 8; cnt++)
             {
@@ -1245,7 +1249,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
             return 0; //error
         }
-        void InitTables()
+        static void InitTables()
         {
             genderStr = new string[5] { "", "男子", "女子", "混成", "混合" };
             InitLapInterval();
@@ -1253,7 +1257,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             InitDistanceTable();
             InitYoketsuTable();
         }
-        public bool RaceExist(int uid)
+        public static bool RaceExist(int uid)
         {
             for (int cnt = 0; cnt < resultList.Count; cnt++)
             {
@@ -1261,11 +1265,11 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
             return false;
         }
-        string[] className;
-        void InitClassDB()
+        static string[] className;
+        static void InitClassDB()
         {
             int numClasses = 0;
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT MAX(クラス番号) as maxClass FROM dbo.クラス where 大会番号=" + eventNo + ";";
@@ -1294,9 +1298,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         }
 
 
-        void ReadRecordDB()
+        static void ReadRecordDB()
         {
-            using (SqlConnection connection = new SqlConnection(magicHead + SERVERName + magicWord))
+            using (SqlConnection connection = new SqlConnection(MDBInterface.connectionString))
             {
                 try
                 {
@@ -1348,9 +1352,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
 
-        void ReadClassDB()
+        static void ReadClassDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT クラス番号,クラス名称 FROM クラス where 大会番号 =  @eventNo ;";
@@ -1375,9 +1379,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
 
-        void InitProgramDB(ref int maxProgramNo, ref int maxUID)
+        static void InitProgramDB(ref int maxProgramNo, ref int maxUID)
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT MAX(表示用競技番号) AS MAXPRGNO, MAX(競技番号) AS MAXUID FROM プログラム WHERE 大会番号=" + eventNo + ";";
@@ -1398,7 +1402,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 }
             }
         }
-        void RedimProgramDBArrays(int maxPrgNo, int maxUID)
+        static void RedimProgramDBArrays(int maxPrgNo, int maxUID)
         {
             maxPrgNo++;
             maxUID++;
@@ -1411,12 +1415,12 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             gameRecord4PrgNo = new int[maxPrgNo];
             numSwimmers4UID = new int[maxUID];
         }
-        void ReadProgramDB()
+        static void ReadProgramDB()
         {
             int uid;
             int prgNo;
 
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT  競技番号, 表示用競技番号, 種目コード, 距離コード, " +
@@ -1452,9 +1456,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         public static string GetEventName() { return eventName; }
         public static string GetEventDate() { return eventDate; }
         public static string GetEventVenue() { return eventVenue; }
-        void ReadEventDB()
+        static void ReadEventDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT 大会名１,開催地,始期間,終期間, ゼロコース使用 FROM 大会設定 where 大会番号=" + eventNo + ";";
@@ -1483,10 +1487,10 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
         }
 
-        int GetNumRelayTeams()
+        static int GetNumRelayTeams()
         {
             int numRelayTeams = 0;
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT MAX(チーム番号) AS MAXRTEAMNUM FROM リレーチーム;";
@@ -1505,9 +1509,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
             return numRelayTeams;
         }
-        void ReadTeamDB()
+        static void ReadTeamDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT チーム番号,チーム名 FROM リレーチーム where 大会番号=" + eventNo + ";";
@@ -1526,10 +1530,10 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
         }
-        int GetNumSwimmers()
+        static int GetNumSwimmers()
         {
             int numSwimmers = 0;
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT MAX(選手番号) AS MAXSNUM FROM 選手 where 大会番号=" + eventNo + ";";
@@ -1549,15 +1553,15 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             return numSwimmers;
         }
 
-        void RedimSwimmerDBArrays(int maxnum)
+        static void RedimSwimmerDBArrays(int maxnum)
         {
             maxnum++;
             swimmerName = new string[maxnum];
             kana = new string[maxnum];
             belongsTo = new int[maxnum];
         }
-        int numTeams = 0;
-        int LocateTeamID(string teamName)
+        static int numTeams = 0;
+        static int LocateTeamID(string teamName)
         {
             int team_id;
             for (team_id = 1; team_id <= numTeams; team_id++)
@@ -1568,9 +1572,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             throw new ArgumentException("error in LocateTeamID. InitCoubName has a kind of bug.");
 
         }
-        int InitClubName()
+        static int InitClubName()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 string myQuery = "SELECT DISTINCT 所属名称１ AS CLUBNAME FROM 選手 where 大会番号=" + eventNo + ";";
@@ -1592,9 +1596,9 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             }
             return (numTeams);
         }
-        void ReadSwimmerDB()
+        static void ReadSwimmerDB()
         {
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 int clubNo;
@@ -1631,7 +1635,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
 
 
-        void ReadResultDB()
+        static void ReadResultDB()
         {
             string[] lapstring = {"lap25","lap50","lap75","lap100","lap125","lap150","lap175", "lap200",
                                 "lap225","lap250", "lap275", "lap300","lap325", "lap350", "lap375","lap400",
@@ -1641,7 +1645,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
                                 "lap1025", "lap1050", "lap1075", "lap1100", "lap1125", "lap1150", "lap1175", "lap1200",
                                 "lap1225", "lap1250", "lap1275", "lap1300", "lap1325", "lap1350", "lap1375", "lap1400",
                                 "lap1425", "lap1450", "lap1475", "lap1500" };
-            SqlConnection conn = new SqlConnection(magicHead + SERVERName + magicWord);
+            SqlConnection conn = new SqlConnection(MDBInterface.connectionString);
             using (conn)
             {
                 Result result;
@@ -1729,7 +1733,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         }
 
 
-        void AnalyzeResult()
+        static void AnalyzeResult()
         {
             int uid;
             for (uid = 1; uid <= MaxUID; uid++)
@@ -1918,6 +1922,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
         public static void ReadConfigFile(string filename,
             ref string serverName,
+	    ref string password,
             ref string eventNoStr,
             ref string htmlFilePath,
             ref string indexFile,
@@ -1931,6 +1936,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         {
             XDocument xml = XDocument.Load(filename);
             serverName = xml.Root.Element("serverName").Value;
+            password = xml.Root.Element("password").Value;
             eventNoStr = xml.Root.Element("eventNo").Value;
             htmlFilePath = xml.Root.Element("htmlFilePath").Value;
             indexFile = xml.Root.Element("indexFile").Value;
@@ -1941,6 +1947,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
             port = xml.Root.Element("port").Value;
             userName = xml.Root.Element("userName").Value;
             keyFile = xml.Root.Element("keyFile").Value;
+
         }
 
 
@@ -1990,6 +1997,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
         public static void WriteConfigFile(
             string filename,     // CreateWebReport.ini
                                           string serverName,  // C:Users\ykato\OneDrive\SwimDB\DB2024\Swim32.mdb 
+                                          string password,
                                           string eventNo,
                                           string htmlFilePath, // usually rFlash/xxxx
                                           string indexFile,    // xxxx.html
@@ -2004,6 +2012,7 @@ static string HtmlName4Relay(MDBInterface mdb, int[] rswimmer )
 
             XDocument xml = XDocument.Load(filename);
             xml.Root.Element("serverName").Value = serverName;
+            xml.Root.Element("password").Value = password;
             xml.Root.Element("eventNo").Value = eventNo;
             xml.Root.Element("htmlFilePath").Value = htmlFilePath;
             xml.Root.Element("indexFile").Value = indexFile;
