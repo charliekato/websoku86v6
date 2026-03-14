@@ -8,11 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>websoku86v6.ico</ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
-    <NoWarn>CS8618</NoWarn>
-    <NoWarn>CS8616</NoWarn>
-    <NoWarn>CS8602</NoWarn>
-    <NoWarn>CS8600</NoWarn>
-    <NoWarn>CS8604</NoWarn>
+    <NoWarn>CS8618;CS8616;CS8602;CS8600;CS8604</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
