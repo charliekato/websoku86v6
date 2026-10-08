@@ -295,6 +295,10 @@ namespace websoku86v6
 
         static void PrintShumoku(StreamWriter sw, int prgNo)
         {
+            int classNo = MDBInterface.GetClassNoFromPrgNo(prgNo);
+            int genderNo = MDBInterface.GetGenderNoFromPrgNo(prgNo);
+            int styleNo = MDBInterface.GetStyleNoFromPrgNo(prgNo);
+            int distanceNo = MDBInterface.GetDistanceNoFromPrgNo(prgNo);
             sw.WriteLine("<hr id=\"PRGH" + prgNo + "\">");
             sw.WriteLine("<table width=\"95%\">");
             sw.WriteLine("  <tr>");
@@ -307,7 +311,7 @@ namespace websoku86v6
 
             if (MDBInterface.GameRecordAvailable)
             {
-                sw.WriteLine("大会記録:" + Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
+                sw.WriteLine("大会記録:" + MDBInterface.GetGameRecord(genderNo, distanceNo, styleNo, classNo));
             }
             sw.WriteLine("</td></tr></table>");
             sw.WriteLine("<hr>");
@@ -360,7 +364,7 @@ namespace websoku86v6
                     while(dr.Read())
                     {
                         string swimmerName;
-                        swimmerName = if_not_null_string(dr["第1泳者"]);
+                        swimmerName = if_not_null_string(dr["氏名"]); // was 第1泳者
 
                         if (first) {
                             first=false;
@@ -368,9 +372,9 @@ namespace websoku86v6
                         }
                         if (MDBInterface.ClassExist)
                         classNo = Convert.ToInt32(dr["クラス番号"]);
-                        prgNo = Convert.ToInt32(dr["PRGNO"]);
+                        prgNo = Convert.ToInt32(dr["表示用競技番号"]);
                         if (if_not_null_string(dr["第2泳者"]) != "")
-                            swimmerName = swimmerName + "<br>"
+                            swimmerName = if_not_null_string(dr["第1泳者"]) + "<br>"
                                 + if_not_null_string(dr["第2泳者"]) + "<br>"
                                 + if_not_null_string(dr["第3泳者"]) + "<br>"
                                 + if_not_null_string(dr["第4泳者"]); 
@@ -386,9 +390,12 @@ namespace websoku86v6
                             if (MDBInterface.ClassExist) className = dr["クラス名称"] == DBNull.Value
                                         ? ""
                                         : (string)dr["クラス名称"];
+                            int gender = Convert.ToInt32(dr["性別コード"]);
+                            int distanceNo = Convert.ToInt32(dr["距離コード"]);
+                            int style = Convert.ToInt32(dr["種目コード"]);
                             PrintShumoku(sw, prgNo, className, (string)dr["性別"],
                                   (string)dr["距離"], (string)dr["種目"], (string)dr["予決"], 
-                                  Misc.TimeIntToStr(MDBInterface.GetGameRecord(prgNo)));
+                                  MDBInterface.GetGameRecord(gender,distanceNo,style,classNo));
                             sw.WriteLine("<div class=\"ahtag\" align=\"right\"> <a href=\"" + prgFile + "#PRGH" + prgNo + "\">レーン順の結果</a>&nbsp;");
                             sw.WriteLine("<a href=\"" + indexFile + "\">種目選択に戻る</a></div>");
                             sw.WriteLine("<br><br>");
@@ -412,7 +419,7 @@ namespace websoku86v6
 
 
                         sw.WriteLine("<td valign=\"top\">" + swimmerName + "</td>");
-                        sw.WriteLine("<td valign=\"top\">" + (string)dr["所属"] + "</td>");
+                        sw.WriteLine("<td valign=\"top\">" + (string)dr["所属名"] + "</td>");
                         sw.WriteLine("<td valign=\"top\">");
                         if (Convert.ToInt32(dr["事由表示"]) == 0)
                         {
@@ -521,7 +528,7 @@ namespace websoku86v6
                         }
                         //if (MDBInterface.ClassExist)
                         //classNo = Convert.ToInt32(dr["クラス番号"]);
-                        prgNo = Convert.ToInt32(dr["PRGNO"]);
+                        prgNo = Convert.ToInt32(dr["表示用競技番号"]);
                         if ((prgNo !=prgNoSave)) {
                             if (inTable)
                                 sw.WriteLine("</table>");
@@ -1003,11 +1010,63 @@ static string HtmlName4Relay(int[] rswimmer )
         public static int GetUIDFromPrgNo(int prgNo) { return UIDFromPrgNo[prgNo]; }
 
         public static string GetClassFromPrgNo(int uid) { return className[ClassNoByPrgNo[uid]]; }
+        public static int GetClassNoFromPrgNo(int uid) { return ClassNoByPrgNo[uid]; }
         public static string GetGenderFromPrgNo(int uid) { return genderStr[genderByPrgNo[uid]]; }
+        public static int GetGenderNoFromPrgNo(int uid) { return genderByPrgNo[uid]; }
         public static string GetStyleFromPrgNo(int uid) { return ShumokuTable[styleByPrgNo[uid]]; }
+        public static int GetStyleNoFromPrgNo(int uid) { return styleByPrgNo[uid]; }
         public static string GetDistanceFromPrgNo(int uid) { return DistanceTable[distanceByPrgNo[uid]]; }
+        public static int GetDistanceNoFromPrgNo( int uid) { return distanceByPrgNo[uid]; }
         public static int GetDistanceCodeFromPrgNo(int uid) { return distanceByPrgNo[uid]; }
         public static string GetPhaseFromPrgNo(int uid) { return phaseByPrgNo[uid]; }
+        public static string GetGameRecord(int gender, int distance, int style, int classNo)
+        {
+            using (SqlConnection conn = new SqlConnection(MDBInterface.connectionString))
+            {
+                string myQuery = @"
+            SELECT 記録
+            FROM 新記録
+            WHERE 大会番号 = @eventNo
+              AND 性別コード = @gender
+              AND 距離コード = @distance
+              AND 種目コード = @style
+              AND 記録区分番号 = @classNo";
+
+                using (SqlCommand comm = new SqlCommand(myQuery, conn))
+                {
+                    comm.Parameters.AddWithValue("@eventNo", eventNo);
+                    comm.Parameters.AddWithValue("@gender", gender);
+                    comm.Parameters.AddWithValue("@distance", distance);
+                    comm.Parameters.AddWithValue("@style", style);
+                    comm.Parameters.AddWithValue("@classNo", classNo);
+
+                    try
+                    {
+                        conn.Open();
+
+                        using (var dr = comm.ExecuteReader())
+                        {
+                            if (dr.Read())
+                            {
+                                return dr["記録"]?.ToString() ?? "";
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            "[GetGameRecord:] error could not find game record for " +
+                            "gender: " + gender +
+                            ", distance: " + distance +
+                            ", style: " + style +
+                            ", class: " + classNo +
+                            " \n " + ex.Message);
+                    }
+
+                    return "";
+                }
+            }
+        }
 
 
         private static string[] TeamName4Relay;
